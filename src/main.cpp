@@ -9,8 +9,13 @@ using namespace std;
 int main() {
    Problem userProblem;
 
-   Problem.printWelcome();
-   Problem.puzzleChoiceInput();
-   Problem.algoChoiceInput();
-   Problem.printPuzzle();
+   userProblem.printWelcome();
+   userProblem.puzzleChoiceInput();
+
+   if (userProblem.getPuzzleChoice() == 2) {
+      userProblem.puzzleGenInput();
+   }
+
+   userProblem.algoChoiceInput();
+   userProblem.printPuzzle();
 }

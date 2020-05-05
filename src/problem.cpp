@@ -9,8 +9,8 @@ void Problem::printWelcome() {
 }
 
 void Problem::printPuzzle() {
-   for (int i = 0; i < ROW_SIZE; i++) {
-      for (int j = 0; j < COL_SIZE; j++) {
+   for (int i = 0; i < puzzle.size(); i++) {
+      for (int j = 0; j < puzzle[i].size(); j++) {
          cout << puzzle[i][j] << " ";
       }
       cout << endl;
@@ -33,33 +33,38 @@ void Problem::algoChoiceInput() {
 }
 
 void Problem::puzzleGenInput() {
-   string top, mid, bot;
+   string row;
 
    cout << "Enter your puzzle, use a zero to represent to blank" << endl;
    cout << "Enter the first row, use space or tabs between numbers ";
-   cin >> top;
+   cin.clear();
+   cin.ignore(1);
+   getline(cin, row);
    cout << endl;
+   convert_to_row(row, 1);
 
    cout << "Enter the second row, use space or tabs between numbers ";
-   cin >> mid;
+   cin.clear();
+   cin.ignore(1);
+   getline(cin, row);
    cout << endl;
+   convert_to_row(row, 2);
 
    cout << "Enter the third row, use space or tabs between numbers ";
-   cin >> bot;
+   cin.clear();
+   cin.ignore(1);
+   getline(cin, row);
    cout << endl;
+   convert_to_row(row, 3);
 
-   convert_to_row(top, 1);
-   convert_to_row(mid, 2);
-   convert_to_row(bot, 3);
-
-   convert_to_puzzle(top, mid, bot);
+   convert_to_puzzle(this->topRow, this->midRow, this->botRow);
 }
 
-void Problem::convert_to_row(string in, int row) {
-   in.erase(remove(in.begin(), in.end(), ' '), in.end());
-   char col_1 = in[0];
-   char col_2 = in[1];
-   char col_3 = in[2];
+void Problem::convert_to_row(string input, int row) {
+   input.erase(remove_if(input.begin(), input.end(), ::isspace), input.end());
+   char col_1 = input[0];
+   char col_2 = input[1];
+   char col_3 = input[2];
 
    if (row == 1) {
       topRow.push_back(col_1);
@@ -76,10 +81,10 @@ void Problem::convert_to_row(string in, int row) {
    }
 }
 
-void Problem:convert_to_puzzle(vector<char> top, vector<char> mid, vector<char> bot) {
+void Problem::convert_to_puzzle(vector<char> top, vector<char> mid, vector<char> bot) {
    for (int i = 0; i < ROW_SIZE; i++) {
       for (int j = 0; j < COL_SIZE; j++) {
-         puzzle[i][j] = top[j];
+         this->puzzle[i][j] = top[j];
       }
    } 
 }
