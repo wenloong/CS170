@@ -4,7 +4,7 @@ SET(CMAKE_CXX_STANDARD 11)
 
 ADD_EXECUTABLE(puzzle
    src/main.cpp
-   src/problem.cpp
+
 )
 
 

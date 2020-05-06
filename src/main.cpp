@@ -12,19 +12,28 @@
 
 using namespace std;
 
+void printWelcome();
 int puzzleChoiceInput();
 int algoChoiceInput();
-void puzzleGenInput();
-void convert_to_row(string input, int row);
+vector<char> puzzleTop();
+vector<char> puzzleMid();
+vector<char> puzzleBot();
+vector<char> convert_to_row(string input);
 
 int main() {
    Puzzle init;
+   vector<char> top, mid, bot;
 
    printWelcome();
    
    /* Puzzle Choice */
    if (puzzleChoiceInput() == 2) {
-      userProblem.puzzleGenInput();
+      top = puzzleTop();
+      mid = puzzleMid();
+      bot = puzzleBot();
+      init = Puzzle(top, mid, bot);
+   } else {
+      init = Puzzle();
    }
 
    NodeContainer* container = new NodeContainer();
@@ -41,6 +50,7 @@ int main() {
       cout << "Error: Invalid Algorithm Choice, exiting program" << endl;
   
    container->search();
+   init.display();
 }
 
 void printWelcome() {
@@ -74,49 +84,45 @@ int algoChoiceInput() {
    return userInput;
 }
 
-void puzzleGenInput() {
+vector<char> puzzleTop() {
    string row;
+   vector<char> temp;
 
    cout << "Enter your puzzle, use a zero to represent to blank" << endl;
    cout << "Enter the first row, use space or tabs between numbers ";
    cin.ignore(1);
    getline(cin, row);
-   convert_to_row(row, 1);
-   row = "";
-
-   cout << "Enter the second row, use space or tabs between numbers ";
-   cin.clear();
-   getline(cin, row);
-   cout << row << endl;
-   convert_to_row(row, 2);
-
-   cout << "Enter the third row, use space or tabs between numbers ";
-   cin.clear();
-   getline(cin, row);
-   convert_to_row(row, 3);
-
-   init = new Puzzle(this->topRow, this->midRow, this->botRow);
+   return convert_to_row(row);
 }
 
+vector<char> puzzleMid() {
+   string row;
+   vector<char> temp;
 
-void convert_to_row(string input, int row) {
+   cout << "Enter the second row, use space or tabs between numbers ";
+   getline(cin, row);
+   return convert_to_row(row);
+}
+
+vector<char> puzzleBot() {
+   string row;
+   vector<char> temp;
+
+   cout << "Enter the third row, use space or tabs between numbers ";
+   getline(cin, row);
+   return convert_to_row(row);
+}
+
+vector<char> convert_to_row(string input) {
    input.erase(remove_if(input.begin(), input.end(), ::isspace), input.end());
    char col_1 = input[0];
    char col_2 = input[1];
    char col_3 = input[2];
 
+   vector<char> temp;
+   temp.push_back(col_1);
+   temp.push_back(col_2);
+   temp.push_back(col_3);
 
-   if (row == 1) {
-      topRow.push_back(col_1);
-      topRow.push_back(col_2);
-      topRow.push_back(col_3);
-   } else if (row == 2) {
-      midRow.push_back(col_1);
-      midRow.push_back(col_2);
-      midRow.push_back(col_3);
-   } else {
-      botRow.push_back(col_1);
-      botRow.push_back(col_2);
-      botRow.push_back(col_3);
-   }
+   return temp;
 }
