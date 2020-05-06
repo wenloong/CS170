@@ -1,13 +1,13 @@
 #ifndef OPERATOR_H
 #define OPERATOR_H
 
-#include "problem.h"
+#include "puzzle.h"
 
 using namespace std;
 
-class Operator: public Problem {
+class Operator: public Puzzle {
    public:
-      Operator(Problem* puzzle) {
+      Operator(Puzzle* puzzle) {
          this->puzzle = puzzle;
       }
 
