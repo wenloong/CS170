@@ -8,17 +8,15 @@
 #include <cctype>
 #include <algorithm>
 
-using namespace std;
+#include "puzzle.h"
 
-#define ROW_SIZE 3
-#define COL_SIZE 3
+using namespace std;
 
 class Problem {
    public:
+      Puzzle* initial_state;
+      Puzzle* goal_state = new Puzzle('1', '2', '3', '4', '5', '6', '7', '8', 'b');
       vector<char> topRow, midRow, botRow;
-      vector<vector<char>> puzzle {{'1', '2', '3'},
-                                   {'4', '5', '6'},
-                                   {'7', '8', 'b'}};
 
       /* Display Functions */
       void printWelcome();
