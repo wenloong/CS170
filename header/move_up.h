@@ -2,16 +2,16 @@
 #define MOVE_UP_H
 
 #include "operator.h"
-#include "problem.h"
+#include "puzzle.h"
 
 class Move_Up: public Operator {
    public:
-      Move_Up(Problem* puzzle): Operator(puzzle) {
+      Move_Up(Puzzle* puzzle): Operator(puzzle) {
          this->puzzle = puzzle;
       }
 
    private:
-      Problem* puzzle;
+      Puzzle* puzzle;
 };
 
 #endif
