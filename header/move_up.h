@@ -10,6 +10,10 @@ class Move_Up: public Operator {
          this->puzzle = puzzle;
       }
 
+      virtual void display() {
+         return this->puzzle->display();
+      }
+
    private:
       Puzzle* puzzle;
 };

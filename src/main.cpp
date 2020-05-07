@@ -9,6 +9,7 @@
 #include "../header/eucledian.h"
 #include "../header/container.h"
 #include "../header/nodecontainer.h"
+#include "../header/operator.h"
 
 using namespace std;
 
@@ -48,7 +49,10 @@ int main() {
       container->set_algorithm_function(new Eucledian());
    else
       cout << "Error: Invalid Algorithm Choice, exiting program" << endl;
-  
+
+   Operator* test = new Operator(init);
+   test.display();
+
    container->search();
    init.display();
 }

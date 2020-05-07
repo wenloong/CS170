@@ -12,7 +12,28 @@ class Puzzle {
       Puzzle(vector<char> top_row, vector<char> mid_row, vector<char> bot_row);
 
       void display();
-   private:
+
+      void setTL(char in);
+      void setTM(char in);
+      void setTR(char in);
+      void setML(char in);
+      void setMM(char in);
+      void setMR(char in);
+      void setBL(char in);
+      void setBM(char in);
+      void setBR(char in);
+
+      char getTL();
+      char getTM();
+      char getTR();
+      char getML();
+      char getMM();
+      char getMR();
+      char getBL();
+      char getBM();
+      char getBR();
+
+   protected:
       char top_left, top_mid, top_right;
       char mid_left, mid_mid, mid_right;
       char bot_left, bot_mid, bot_right;
@@ -61,6 +82,78 @@ void Puzzle::display() {
    cout << top_left << " " << top_mid << " " << top_right << endl;
    cout << mid_left << " " << mid_mid << " " << mid_right << endl;
    cout << bot_left << " " << bot_mid << " " << bot_right << endl;
+}
+
+char Puzzle::getTL() {
+   return top_left;
+}
+
+char Puzzle::getTM() {
+   return top_mid;
+}
+
+char Puzzle::getTR() {
+   return top_right;
+}
+
+char Puzzle::getML() {
+   return mid_left;
+}
+
+char Puzzle::getMM() {
+   return mid_mid;
+}
+
+char Puzzle::getMR() {
+   return mid_right;
+}
+
+char Puzzle::getBL() {
+   return bot_left;
+}
+
+char Puzzle::getBM() {
+   return bot_mid;
+}
+
+char Puzzle::getBR() {
+   return bot_right;
+}
+
+void Puzzle::setTL(char in) {
+   top_left = in;
+}
+
+void Puzzle::setTM(char in) {
+   top_mid = in;
+}
+
+void Puzzle::setTR(char in) {
+   top_right = in;
+}
+
+void Puzzle::setML(char in) {
+   mid_left = in;
+}
+
+void Puzzle::setMM(char in) {
+   mid_mid = in;
+}
+
+void Puzzle::setMR(char in) {
+   mid_right = in;
+}
+
+void Puzzle::setBL(char in) {
+   bot_left = in;
+}
+
+void Puzzle::setBM(char in) {
+   bot_mid = in;
+}
+
+void Puzzle::setBR(char in) {
+   bot_right = in;
 }
 
 #endif
