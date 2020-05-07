@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "../header/puzzle.h"
 #include "../header/algorithm.h"
@@ -52,12 +53,8 @@ int main() {
    else
       cout << "Error: Invalid Algorithm Choice, exiting program" << endl;
 
-   
-   Operator* test = new Operator(init);
-   container->print();
-
    container->search();
-   init.display();
+   //container->print();
 }
 
 void printWelcome() {

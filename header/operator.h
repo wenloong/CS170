@@ -39,21 +39,22 @@ class Operator {
                char temp = puzzle.getML();
                puzzle.setML('b');
                puzzle.setBL(temp);
-            } else if (puzzle.getML() == 'b') {
+            } else if (puzzle.getBM() == 'b') {
                char temp = puzzle.getMM();
                puzzle.setMM('b');
                puzzle.setBM(temp);
-            } else if (puzzle.getMR() == 'b') {
+            } else if (puzzle.getBR() == 'b') {
                char temp = puzzle.getMR();
                puzzle.setMR('b');
                puzzle.setBR(temp);
             }
+            puzzle.setG(puzzle.getG() + 1);
          }
          return true;
       }
 
       bool move_down() {
-         if (puzzle.getBL() == 'b' || puzzle.getBM() == 'b' || puzzle.getMR() == 'b') {
+         if (puzzle.getBL() == 'b' || puzzle.getBM() == 'b' || puzzle.getBR() == 'b') {
             return false;
          } else {
             if (puzzle.getTL() == 'b') {
@@ -80,7 +81,8 @@ class Operator {
                char temp = puzzle.getBR();
                puzzle.setBR('b');
                puzzle.setMR(temp);
-            } 
+            }
+            puzzle.setG(puzzle.getG() + 1);
          }
          return true;
       }
@@ -114,6 +116,7 @@ class Operator {
                puzzle.setBM('b');
                puzzle.setBR(temp);
             } 
+            puzzle.setG(puzzle.getG() + 1);
          }
          return true;
       }
@@ -130,10 +133,10 @@ class Operator {
                char temp = puzzle.getMR();
                puzzle.setMR('b');
                puzzle.setMM(temp);
-            } else if (puzzle.getMR() == 'b') {
+            } else if (puzzle.getBM() == 'b') {
                char temp = puzzle.getBR();
                puzzle.setBR('b');
-               puzzle.setMR(temp);
+               puzzle.setBM(temp);
             } else if (puzzle.getTL() == 'b') {
                char temp = puzzle.getTM();
                puzzle.setTM('b');
@@ -147,6 +150,7 @@ class Operator {
                puzzle.setBM('b');
                puzzle.setBL(temp);
             } 
+            puzzle.setG(puzzle.getG() + 1);
          }
          return true;
       }
@@ -154,6 +158,45 @@ class Operator {
       void display() {
          return this->puzzle.display();
       }
+
+      Puzzle getPuzzleState() {
+         return puzzle;
+      }
+
+      int getG() {
+         return puzzle.getG();
+      }
+
+      bool compare(Puzzle* p1) {
+         if (this->puzzle.getTL() == p1->getTL() &&
+             this->puzzle.getTM() == p1->getTM() &&
+             this->puzzle.getTR() == p1->getTR() &&
+             this->puzzle.getML() == p1->getML() &&
+             this->puzzle.getMM() == p1->getMM() &&
+             this->puzzle.getMR() == p1->getMR() &&
+             this->puzzle.getBL() == p1->getBL() &&
+             this->puzzle.getBM() == p1->getBM() &&
+             this->puzzle.getBR() == p1->getBR()) {
+            return true;
+         }
+         return false;
+      }
+
+      bool compare(Puzzle p1) {
+         if (this->puzzle.getTL() == p1.getTL() &&
+             this->puzzle.getTM() == p1.getTM() &&
+             this->puzzle.getTR() == p1.getTR() &&
+             this->puzzle.getML() == p1.getML() &&
+             this->puzzle.getMM() == p1.getMM() &&
+             this->puzzle.getMR() == p1.getMR() &&
+             this->puzzle.getBL() == p1.getBL() &&
+             this->puzzle.getBM() == p1.getBM() &&
+             this->puzzle.getBR() == p1.getBR()) {
+            return true;
+         }
+         return false;
+      }
+
 
    private:
       Puzzle puzzle;

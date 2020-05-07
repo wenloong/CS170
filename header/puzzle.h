@@ -11,8 +11,9 @@ class Puzzle {
       Puzzle(char t_l, char t_m, char t_r, char m_l, char m_m, char m_r, char b_l, char b_m, char b_r);
       Puzzle(vector<char> top_row, vector<char> mid_row, vector<char> bot_row);
 
-      bool compare(Puzzle p1, Puzzle p2);
-
+      bool compare(Puzzle* p1);
+      bool compare(Puzzle p1);
+      vector<Puzzle> getChild(Puzzle puzzle);
       void display();
 
       void setTL(char in);
@@ -24,6 +25,7 @@ class Puzzle {
       void setBL(char in);
       void setBM(char in);
       void setBR(char in);
+      void setG(int n);
 
       char getTL();
       char getTM();
@@ -35,7 +37,9 @@ class Puzzle {
       char getBM();
       char getBR();
 
-   protected:
+      int getG();
+   private:
+      int g;
       char top_left, top_mid, top_right;
       char mid_left, mid_mid, mid_right;
       char bot_left, bot_mid, bot_right;
@@ -86,16 +90,31 @@ void Puzzle::display() {
    cout << bot_left << " " << bot_mid << " " << bot_right << endl;
 }
 
-bool Puzzle::compare(Puzzle p1, Puzzle p2) {
-   if (p1.getTL() == p2.getTL() &&
-       p1.getTM() == p2.getTM() &&
-       p1.getTR() == p2.getTR() &&
-       p1.getML() == p2.getML() &&
-       p1.getMM() == p2.getMM() &&
-       p1.getMR() == p2.getMR() &&
-       p1.getBL() == p2.getBL() &&
-       p1.getBM() == p2.getBM() &&
-       p1.getBR() == p2.getBR()) {
+bool Puzzle::compare(Puzzle* p1) {
+   if (this->getTL() == p1->getTL() &&
+       this->getTM() == p1->getTM() &&
+       this->getTR() == p1->getTR() &&
+       this->getML() == p1->getML() &&
+       this->getMM() == p1->getMM() &&
+       this->getMR() == p1->getMR() &&
+       this->getBL() == p1->getBL() &&
+       this->getBM() == p1->getBM() &&
+       this->getBR() == p1->getBR()) {
+      return true;
+   }
+   return false;
+}
+
+bool Puzzle::compare(Puzzle p1) {
+   if (this->getTL() == p1.getTL() &&
+       this->getTM() == p1.getTM() &&
+       this->getTR() == p1.getTR() &&
+       this->getML() == p1.getML() &&
+       this->getMM() == p1.getMM() &&
+       this->getMR() == p1.getMR() &&
+       this->getBL() == p1.getBL() &&
+       this->getBM() == p1.getBM() &&
+       this->getBR() == p1.getBR()) {
       return true;
    }
    return false;
@@ -171,6 +190,14 @@ void Puzzle::setBM(char in) {
 
 void Puzzle::setBR(char in) {
    bot_right = in;
+}
+
+void Puzzle::setG(int n) {
+   g = n;
+}
+
+int Puzzle::getG() {
+   return g;
 }
 
 #endif
