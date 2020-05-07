@@ -1,28 +1,57 @@
-#ifndef VECTORCONTAINER_H
-#define VECTORCONTAINER_H
+#ifndef NODECONTAINER_H
+#define NODECONTAINER_H
 
-#include <vector>
-
-#include "problem.h"
+#include "puzzle.h"
 #include "algorithm.h"
 #include "container.h"
 
 using namespace std;
 
+struct Node {
+      Puzzle data;
+      Node* next;
+};
+
 class NodeContainer: public Container {
    public:
-      Problem state;
-      NodeContainer* up;
-      NodeContainer* down;
-      NodeContainer* left;
-      NodeContainer* right;
+      NodeContainer() {
+         head = NULL;
+         tail = NULL;
+      }
 
+      void create_node(Puzzle state);
+      void print();
       void set_algorithm_function(Algorithm* algo_function);
       void search();
 
    private:
-      vector<Problem*> container;
+      Node *head, *tail;
 };
+
+void NodeContainer::create_node(Puzzle state) {
+   Node *temp = new Node;
+   temp->data = state;
+   temp->next = NULL;
+
+   if (head == NULL) {
+      head = temp;
+      tail = temp;
+      temp = NULL;
+   } else {
+      tail->next = temp;
+      tail = temp;
+   }
+}
+
+void NodeContainer::print() {
+   Node* temp = new Node;
+   temp = head;
+
+   while (temp != NULL) {
+      temp->data.display();
+      temp = temp->next;
+   }
+}
 
 void NodeContainer::set_algorithm_function(Algorithm* algo_function) {
    this->algo_function = algo_function;

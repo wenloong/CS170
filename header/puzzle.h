@@ -11,6 +11,8 @@ class Puzzle {
       Puzzle(char t_l, char t_m, char t_r, char m_l, char m_m, char m_r, char b_l, char b_m, char b_r);
       Puzzle(vector<char> top_row, vector<char> mid_row, vector<char> bot_row);
 
+      bool compare(Puzzle p1, Puzzle p2);
+
       void display();
 
       void setTL(char in);
@@ -82,6 +84,21 @@ void Puzzle::display() {
    cout << top_left << " " << top_mid << " " << top_right << endl;
    cout << mid_left << " " << mid_mid << " " << mid_right << endl;
    cout << bot_left << " " << bot_mid << " " << bot_right << endl;
+}
+
+bool Puzzle::compare(Puzzle p1, Puzzle p2) {
+   if (p1.getTL() == p2.getTL() &&
+       p1.getTM() == p2.getTM() &&
+       p1.getTR() == p2.getTR() &&
+       p1.getML() == p2.getML() &&
+       p1.getMM() == p2.getMM() &&
+       p1.getMR() == p2.getMR() &&
+       p1.getBL() == p2.getBL() &&
+       p1.getBM() == p2.getBM() &&
+       p1.getBR() == p2.getBR()) {
+      return true;
+   }
+   return false;
 }
 
 char Puzzle::getTL() {

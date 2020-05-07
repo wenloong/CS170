@@ -23,6 +23,7 @@ vector<char> convert_to_row(string input);
 
 int main() {
    Puzzle init;
+   Puzzle* goal_state = new Puzzle('1', '2', '3', '4', '5', '6', '7', '8', 'b');
    vector<char> top, mid, bot;
 
    printWelcome();
@@ -38,6 +39,7 @@ int main() {
    }
 
    NodeContainer* container = new NodeContainer();
+   container->create_node(init);
 
    /* Algorithm Choice */
    int algoChoice = algoChoiceInput();
@@ -50,8 +52,9 @@ int main() {
    else
       cout << "Error: Invalid Algorithm Choice, exiting program" << endl;
 
+   
    Operator* test = new Operator(init);
-   test.display();
+   container->print();
 
    container->search();
    init.display();
