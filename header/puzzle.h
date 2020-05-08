@@ -15,6 +15,8 @@ class Puzzle {
       bool compare(Puzzle p1);
       vector<Puzzle> getChild(Puzzle puzzle);
       void display();
+      int calculate_misplaced();
+      int calculate_eucledian();
 
       void setTL(char in);
       void setTM(char in);
@@ -118,6 +120,56 @@ bool Puzzle::compare(Puzzle p1) {
       return true;
    }
    return false;
+}
+
+int Puzzle::calculate_misplaced() {
+   int count_misplaced;
+
+   if (this->getTL() != '1' && this->getTL() != 'b')
+      count_misplaced++;
+   if (this->getTM() != '2' && this->getTM() != 'b')
+      count_misplaced++;
+   if (this->getTR() != '3' && this->getTR() != 'b')
+      count_misplaced++;
+   if (this->getML() != '4' && this->getML() != 'b')
+      count_misplaced++;
+   if (this->getMM() != '5' && this->getMM() != 'b')
+      count_misplaced++;
+   if (this->getMR() != '6' && this->getMR() != 'b')
+      count_misplaced++;
+   if (this->getBL() != '7' && this->getBL() != 'b')
+      count_misplaced++;
+   if (this->getBM() != '8' && this->getBM() != 'b')
+      count_misplaced++;   
+   if (this->getBR() != 'b' && this->getBR() != 'b')
+      count_misplaced++;
+
+   return count_misplaced;
+}
+
+int Puzzle::calculate_eucledian() {
+   int count_eucledian;
+
+   if (this->getTL() != '1' && this->getTL() != 'b')
+      count_eucledian += abs((this->getTL() - 1) % 3 - (0 % 3)) + abs(floor((this->getTL() - 1) / 3) - floor(0/3));
+   if (this->getTM() != '2' && this->getTM() != 'b')
+      count_eucledian += abs((this->getTM() - 1) % 3 - (1 % 3)) + abs(floor((this->getTM() - 1) / 3) - floor(1/3)); 
+   if (this->getTR() != '3' && this->getTR() != 'b')
+      count_eucledian += abs((this->getTR() - 1) % 3 - (2 % 3)) + abs(floor((this->getTR() - 1) / 3) - floor(2/3)); 
+   if (this->getML() != '4' && this->getML() != 'b')
+      count_eucledian += abs((this->getML() - 1) % 3 - (3 % 3)) + abs(floor((this->getML() - 1) / 3) - floor(3/3)); 
+   if (this->getMM() != '5' && this->getMM() != 'b')
+      count_eucledian += abs((this->getMM() - 1) % 3 - (4 % 3)) + abs(floor((this->getMM() - 1) / 3) - floor(4/3)); 
+   if (this->getMR() != '6' && this->getMR() != 'b')
+      count_eucledian += abs((this->getMR() - 1) % 3 - (5 % 3)) + abs(floor((this->getMR() - 1) / 3) - floor(5/3)); 
+   if (this->getBL() != '7' && this->getBL() != 'b')
+      count_eucledian += abs((this->getBL() - 1) % 3 - (6 % 3)) + abs(floor((this->getBL() - 1) / 3) - floor(6/3)); 
+   if (this->getBM() != '8' && this->getBM() != 'b')
+      count_eucledian += abs((this->getBM() - 1) % 3 - (7 % 3)) + abs(floor((this->getBM() - 1) / 3) - floor(7/3));  
+   if (this->getBR() != 'b' && this->getBR() != 'b')
+      count_eucledian += abs((this->getBR() - 1) % 3 - (8 % 3)) + abs(floor((this->getBR() - 1) / 3) - floor(8/3)); 
+
+   return count_eucledian;
 }
 
 char Puzzle::getTL() {

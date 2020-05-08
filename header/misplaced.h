@@ -6,9 +6,16 @@
 #include "puzzle.h"
 #include "operator.h"
 
+struct CompareCostMisplaced {
+   bool operator() (Operator* p1, Operator* p2) {
+      return (p1->getPuzzleState().calculate_misplaced() + p1->getG()) > (p2->getPuzzleState().calculate_misplaced() + p2->getG());
+   }
+};
+
 class Misplaced:public Algorithm {
    public:
       void search(Container* container);
+      bool is_visited(vector<Operator*> visited, Puzzle state);
       int calculate_misplaced(Puzzle puzzle);
    private:
 
@@ -17,69 +24,90 @@ class Misplaced:public Algorithm {
 void Misplaced::search(Container* container) {
    cout << "A* Misplaced Heuristic Search" << endl;
    
+   // First define initial state and goal state
    Puzzle init = container->return_tail();
    Puzzle* goal = new Puzzle('1', '2', '3', '4', '5', '6', '7', '8', 'b');
 
+   // If the program detects that the initial state is already the goal state, end the program
    if (init.compare(goal) == true) {
       cout << "Goal!" << endl;
       init.display();
       return;
    }
 
-   Operator* move = new Operator(init);
-   move->display();
+   Operator* child = new Operator(init);
+   priority_queue<Operator*, vector<Operator*>, CompareCostMisplaced> frontier;
+   vector<Operator*> visited;
+   int num_nodes = 0;
+   int max_nodes = 0;
 
-   if (move->move_down()) {
-   container->create_node(move->getPuzzleState());
-   cout << endl;
-   move->display();
+   frontier.push(child);
+
+   // While the frontier still contains node, keep looping through it
+   while (!frontier.empty()) {
+      cout << endl;
+      Operator* current_state = frontier.top();
+      frontier.pop();
+      current_state->display();
+
+      // If the current state is the goal state, we can break the loop and print the answer
+      if (current_state->compare(goal)) {
+         cout << "Goal!" << endl;
+         cout << "To solve this problem the search algorithm expanded a total of " << num_nodes << " nodes." << endl;
+         cout << "The maximum number of nodes in the queue at any one time: " << max_nodes << "." << endl;
+         break;
+      }
+
+      Operator* up = new Operator(current_state->getPuzzleState());
+      Operator* down = new Operator(current_state->getPuzzleState());
+      Operator* left = new Operator(current_state->getPuzzleState());
+      Operator* right = new Operator(current_state->getPuzzleState());
+      
+      visited.push_back(current_state);
+
+      if (up->move_up()) {
+         if (!is_visited(visited, up->getPuzzleState())) {
+            frontier.push(up);
+            num_nodes++;
+         }
+      }
+
+     if (down->move_down()) {
+         if (!is_visited(visited, down->getPuzzleState())) {
+            frontier.push(down);
+            num_nodes++;
+         }
+      }
+
+      if (left->move_left()) {
+         if (!is_visited(visited, left->getPuzzleState())) {
+            frontier.push(left);
+            num_nodes++;
+         }
+      }
+
+      if (right->move_right()) {
+         if (!is_visited(visited, right->getPuzzleState())) {
+            frontier.push(right);
+            num_nodes++;
+         }
+      }
+
+      if (frontier.size() > max_nodes)
+         max_nodes = frontier.size();  
+
+      //cout << "Press enter to continue";
+      //cin.ignore(numeric_limits<streamsize>::max(), '\n');
    }
-
-   move->move_left();
-   container->create_node(move->getPuzzleState());
-   cout << endl;
-   move->display();
-
-   move->move_up();
-   cout << endl;
-   move->display();
-
-   move->move_right();
-   cout << endl;
-   move->display();
-
-   move->move_down();
-   cout << endl;
-   move->display(); 
- 
-   cout << endl << endl;
-   cout << "Displaying results: " << endl;
-   container->print();  
 }
 
-int Misplaced::calculate_misplaced(Puzzle puzzle) {
-   int count_misplaced;
+bool Misplaced::is_visited(vector<Operator*> visited, Puzzle state) {
+   for (int i = 0; i < visited.size(); i++) {
+      if (visited[i]->compare(state))
+         return true;
+   }
 
-   if (puzzle.getTL() != '1' && puzzle.getTL() != 'b')
-      count_misplaced++;
-   if (puzzle.getTM() != '2' && puzzle.getTM() != 'b')
-      count_misplaced++;
-   if (puzzle.getTR() != '3' && puzzle.getTR() != 'b')
-      count_misplaced++;
-   if (puzzle.getML() != '4' && puzzle.getML() != 'b')
-      count_misplaced++;
-   if (puzzle.getMM() != '5' && puzzle.getMM() != 'b')
-      count_misplaced++;
-   if (puzzle.getMR() != '6' && puzzle.getMR() != 'b')
-      count_misplaced++;
-   if (puzzle.getBL() != '7' && puzzle.getBL() != 'b')
-      count_misplaced++;
-   if (puzzle.getBM() != '8' && puzzle.getBM() != 'b')
-      count_misplaced++;   
-   if (puzzle.getBR() != 'b' && puzzle.getBR() != 'b')
-      count_misplaced++;
-
-   return count_misplaced;
+   return false;
 }
 
 #endif
