@@ -54,20 +54,19 @@ int main() {
       cout << "Error: Invalid Algorithm Choice, exiting program" << endl;
 
    container->search();
-   //container->print();
 }
 
 void printWelcome() {
    int sid = 862154819;
 
-   cout << "Welcome to \"" << sid << "\" 8 puzzle solver." << endl;
+   cout << "\033[1;37mWelcome to \"\033[0m" << sid << "\033[1;37m\" 8 puzzle solver.\033[0m" << endl;
 }
 
 int puzzleChoiceInput() {
    int userInput;
    
-   cout << "Type \"1\" to use a default puzzle, or \"2\" to enter your own puzzle." << endl;
-   cout << "[guestUser@root]$ ";
+   cout << "\033[21;33mType \"1\" to use a default puzzle, or \"2\" to enter your own puzzle.\033[0m" << endl;
+   cout << "\033[21;32m[guestUser@root]$ \033[0m";
    cin >> userInput;
    cout << endl;
    
@@ -77,11 +76,11 @@ int puzzleChoiceInput() {
 int algoChoiceInput() {
    int userInput;
    
-   cout << "Enter your choice of algorithm" << endl;
-   cout << "1. Uniform Cost Search" << endl;
-   cout << "2. A* with the Misplaced Tile Heuristic" << endl;
-   cout << "3. A* with the Eucledian distance Heuristic" << endl;
-   cout << "[guestUser@root]$ ";
+   cout << "\033[21;31mEnter your choice of algorithm\033[0m" << endl;
+   cout << "\033[21;36m1. Uniform Cost Search\033[0m" << endl;
+   cout << "\033[21;36m2. A* with the Misplaced Tile Heuristic\033[0m" << endl;
+   cout << "\033[21;36m3. A* with the Eucledian distance Heuristic\033[0m" << endl;
+   cout << "\033[21;32m[guestUser@root]$ \033[0m";
    cin >> userInput;
    cout << endl;
    

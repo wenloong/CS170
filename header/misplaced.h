@@ -5,6 +5,7 @@
 #include "container.h"
 #include "puzzle.h"
 #include "operator.h"
+#include "nodecontainer.h"
 
 struct CompareCostMisplaced {
    bool operator() (Operator* p1, Operator* p2) {
@@ -40,18 +41,19 @@ void Misplaced::search(Container* container) {
    vector<Operator*> visited;
    int num_nodes = 0;
    int max_nodes = 0;
-
+ 
    frontier.push(child);
-
+   
    // While the frontier still contains node, keep looping through it
    while (!frontier.empty()) {
-      cout << endl;
       Operator* current_state = frontier.top();
       frontier.pop();
-      current_state->display();
-
+      container->create_node(current_state->getPuzzleState());
+  
       // If the current state is the goal state, we can break the loop and print the answer
       if (current_state->compare(goal)) {
+         container->remove_head();
+         container->print();
          cout << "Goal!" << endl;
          cout << "To solve this problem the search algorithm expanded a total of " << num_nodes << " nodes." << endl;
          cout << "The maximum number of nodes in the queue at any one time: " << max_nodes << "." << endl;

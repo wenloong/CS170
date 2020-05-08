@@ -16,6 +16,7 @@ class Container {
 
       void set_algorithm_function(Algorithm* algo_function);
       virtual void create_node(Puzzle state) = 0;
+      virtual void remove_head() = 0;
       virtual void print() = 0;
       virtual void search() = 0;
       virtual Puzzle return_tail() = 0;

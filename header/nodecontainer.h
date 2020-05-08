@@ -34,6 +34,15 @@ class Node_LL {
          }
       }
 
+      void remove_head() {
+         if (head == NULL)
+            return;
+
+         Node* temp = head;
+         head = head->next;
+         delete temp;
+      }
+
       void print() {
          Node* temp = new Node;
          temp = head;
@@ -59,6 +68,7 @@ class NodeContainer: public Container {
    public:
 
       void create_node(Puzzle state);
+      void remove_head();
       void print();
       void set_algorithm_function(Algorithm* algo_function);
       void search();
@@ -70,6 +80,10 @@ class NodeContainer: public Container {
 
 void NodeContainer::create_node(Puzzle state) {
    puzzle_obj.create_node(state);
+}
+
+void NodeContainer::remove_head() {
+   puzzle_obj.remove_head();
 }
 
 void NodeContainer::print() {
