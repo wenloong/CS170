@@ -103,7 +103,6 @@ void Uniform::search(Container* container) {
       //cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
    }
-   cout << "something breaks" << endl;
 }
 
 bool Uniform::is_visited(vector<Operator*> visited, Puzzle state) {

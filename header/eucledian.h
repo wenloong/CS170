@@ -5,53 +5,109 @@
 
 class Algorithm;
 
+struct CompareCostEucledian {
+   bool operator() (Operator* p1, Operator* p2) {
+      return (p1->getPuzzleState().calculate_eucledian() + p1->getG()) > (p2->getPuzzleState().calculate_eucledian() + p2->getG());
+   }
+};
+
 class Eucledian:public Algorithm {
    public:
       void search(Container* container);
+      bool is_visited(vector<Operator*> visited, Puzzle state);
       int calculate_eucledian(Puzzle puzzle);
    private:
-      vector<vector<char>> puzzle;
 
 };
 
 void Eucledian::search(Container* container) {
    cout << "A* Eucledian Heuristic Search" << endl;
 
+   // First define initial state and goal state
    Puzzle init = container->return_tail();
    Puzzle* goal = new Puzzle('1', '2', '3', '4', '5', '6', '7', '8', 'b');
 
+   // If the program detects that the initial state is already the goal state, end the program
    if (init.compare(goal) == true) {
       cout << "Goal!" << endl;
       init.display();
       return;
    }
 
+   Operator* child = new Operator(init);
+   priority_queue<Operator*, vector<Operator*>, CompareCostEucledian> frontier;
+   vector<Operator*> visited;
+   int num_nodes = 0;
+   int max_nodes = 0;
 
+   frontier.push(child);
+
+   // While the frontier still contains node, keep looping through it
+   while (!frontier.empty()) {
+      cout << endl;
+      Operator* current_state = frontier.top();
+      frontier.pop();
+      current_state->display();
+
+      // If the current state is the goal state, we can break the loop and print the answer
+      if (current_state->compare(goal)) {
+         cout << "Goal!" << endl;
+         cout << "To solve this problem the search algorithm expanded a total of " << num_nodes << " nodes." << endl;
+         cout << "The maximum number of nodes in the queue at any one time: " << max_nodes << "." << endl;
+         break;
+      }
+
+      Operator* up = new Operator(current_state->getPuzzleState());
+      Operator* down = new Operator(current_state->getPuzzleState());
+      Operator* left = new Operator(current_state->getPuzzleState());
+      Operator* right = new Operator(current_state->getPuzzleState());
+      
+      visited.push_back(current_state);
+
+      if (up->move_up()) {
+         if (!is_visited(visited, up->getPuzzleState())) {
+            frontier.push(up);
+            num_nodes++;
+         }
+      }
+
+      if (down->move_down()) {
+         if (!is_visited(visited, down->getPuzzleState())) {
+            frontier.push(down);
+            num_nodes++;
+         }
+      }
+
+      if (left->move_left()) {
+         if (!is_visited(visited, left->getPuzzleState())) {
+            frontier.push(left);
+            num_nodes++;
+         }
+      }
+
+      if (right->move_right()) {
+         if (!is_visited(visited, right->getPuzzleState())) {
+            frontier.push(right);
+            num_nodes++;
+         }
+      }
+
+      if (frontier.size() > max_nodes)
+         max_nodes = frontier.size();  
+
+      //cout << "Press enter to continue";
+      //cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+   }
 }
 
-int Eucledian::calculate_eucledian(Puzzle puzzle) {
-   int count_eucledian;
+bool Eucledian::is_visited(vector<Operator*> visited, Puzzle state) {
+   for (int i = 0; i < visited.size(); i++) {
+      if (visited[i]->compare(state))
+         return true;
+   }
 
-   if (puzzle.getTL() != '1' && puzzle.getTL() != 'b')
-      count_eucledian += abs((puzzle.getTL() - 1) % 3 - (0 % 3)) + abs(floor((puzzle.getTL() - 1) / 3) - floor(0/3));
-   if (puzzle.getTM() != '2' && puzzle.getTM() != 'b')
-      count_eucledian += abs((puzzle.getTM() - 1) % 3 - (1 % 3)) + abs(floor((puzzle.getTM() - 1) / 3) - floor(1/3)); 
-   if (puzzle.getTR() != '3' && puzzle.getTR() != 'b')
-      count_eucledian += abs((puzzle.getTR() - 1) % 3 - (2 % 3)) + abs(floor((puzzle.getTR() - 1) / 3) - floor(2/3)); 
-   if (puzzle.getML() != '4' && puzzle.getML() != 'b')
-      count_eucledian += abs((puzzle.getML() - 1) % 3 - (3 % 3)) + abs(floor((puzzle.getML() - 1) / 3) - floor(3/3)); 
-   if (puzzle.getMM() != '5' && puzzle.getMM() != 'b')
-      count_eucledian += abs((puzzle.getMM() - 1) % 3 - (4 % 3)) + abs(floor((puzzle.getMM() - 1) / 3) - floor(4/3)); 
-   if (puzzle.getMR() != '6' && puzzle.getMR() != 'b')
-      count_eucledian += abs((puzzle.getMR() - 1) % 3 - (5 % 3)) + abs(floor((puzzle.getMR() - 1) / 3) - floor(5/3)); 
-   if (puzzle.getBL() != '7' && puzzle.getBL() != 'b')
-      count_eucledian += abs((puzzle.getBL() - 1) % 3 - (6 % 3)) + abs(floor((puzzle.getBL() - 1) / 3) - floor(6/3)); 
-   if (puzzle.getBM() != '8' && puzzle.getBM() != 'b')
-      count_eucledian += abs((puzzle.getBM() - 1) % 3 - (7 % 3)) + abs(floor((puzzle.getBM() - 1) / 3) - floor(7/3));  
-   if (puzzle.getBR() != 'b' && puzzle.getBR() != 'b')
-      count_eucledian += abs((puzzle.getBR() - 1) % 3 - (8 % 3)) + abs(floor((puzzle.getBR() - 1) / 3) - floor(8/3)); 
-
-   return count_eucledian;
+   return false;
 }
 
 #endif
