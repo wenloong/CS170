@@ -1,435 +1,385 @@
 #include <iostream>
-using namespace std;
-#include <string>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <cmath>
+#include <limits>
 #include <algorithm>
 
-vector<double> loadData;
-float overallBestForward = 0;
-float overallBestBackward = 0;
+using namespace std;
 
+const int MAX_INSTANCES = 2048;
+const int MAX_FEATURES = 64;
 
-struct node {
-    int classification;
-    vector<double> features;
-    
-    node() {};
-    node(int classType, int location) {
-        classification = classType;
-        location += 1;
+void printSubset (vector<int> subset){
+// helper function to print our feature subsets
+// returns: void
 
-        for (int i = location; i < loadData.size(); i++) {
-            if (loadData.at(i) == 1 || loadData.at(i) == 2) {
-                break;
-            } else {
-                features.push_back(loadData.at(i));
-            }
-        }
-    }
-};
+	cout << "{";
+	for (int i =0; i < subset.size(); i++){
+		cout << subset.at(i);
+		if (i != subset.size() - 1){
+			cout << ", ";
+		}
+	}
+	cout << "}";
+}
 
-void normalize(vector<node>& data) {
-    vector<double> featureMin;
-    vector<double> featureMax;
+void normalize (double (&dataset)[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures) {
+// This function normalizes the data for us.
+// returns: nothing -- our dataset is passed by reference and changed
+// Normalized Data:  X = ( X-MEAN ) / STANDARD DEVIATION
 
-    cout << "Normalizing data... ";
-    
-    // Initializing vector to first value of each feature
-    for (int i = 0; i < data.at(0).features.size(); i++) {
-        featureMin.push_back(data.at(0).features.at(i));
-        featureMax.push_back(data.at(0).features.at(i));
-    }
+	cout << "This dataset has " << numFeatures - 1 << " features (not including the class attribute), with "
+			<< numInstances << " instances." << endl;
 
-    for (int i = 0; i < data.size(); i++) {
-        for (int j = 0; j < data.at(0).features.size(); j++) {
-            if (data.at(i).features.at(j) < featureMin.at(j)) {
-                featureMin.at(j) = data.at(i).features.at(j);
-            }
-            if (data.at(i).features.at(j) > featureMax.at(j)) {
-                featureMax.at(j) = data.at(i).features.at(j);
-            }
-        }
-    }
+	cout << endl;
+	cout << "Please wait while I normalize the data... ";
 
-    for (int i = 0; i < data.size(); i++) {
-        for (int j = 0; j < data.at(0).features.size(); j++) {
-            data.at(i).features.at(j) = (data.at(i).features.at(j) - featureMin.at(j)) / (featureMax.at(j) - featureMin.at(j));
-        }
-    }
+	double sum;
+	double varianceNum;
+	double variance;
+	double mean[numFeatures];
+	double std[numFeatures];
+	
+	// Calculating the mean for each column (feature)
+	for (int j = 1; j < numFeatures; ++j){
+		sum = 0;
 
-    cout << "Done!\n\n";
+		for (int i = 0; i < numInstances; i++){
+			sum += dataset[i][j];
+
+		}
+
+		mean[j] = sum / numInstances;
+	}
+
+	// Calculating the standard deviation for each column (feature)
+	for (int j = 1; j < numFeatures; ++j){
+		varianceNum = 0;
+
+		for (int i = 0; i < numInstances; i++){
+			varianceNum += pow(dataset[i][j] - mean[j], 2);
+
+		}
+
+		variance = varianceNum / numInstances;
+		std[j] = sqrt(variance);
+	}
+
+	// Normalizing each data point
+	for (int i = 0; i < numInstances; i++){
+		for (int j = 1; j < numFeatures; j++){
+			dataset[i][j] = (dataset[i][j] - mean[j]) / std[j];
+		}
+	}
+
+	cout << "Done!" << endl;
 
 }
 
-float leave_one_out(vector<node> data, vector<int> featureSet, int featureToAdd) {
-    int numCorrect = 0;
-    float accuracy = 0;
+double nearestNeighbor (double dataset[MAX_INSTANCES][MAX_FEATURES], int instIndex, vector<int> featureSubset, int numInstances) {
+//  This function finds the nearest neighbor of an instance given a featureSubset
+//	returns: classification of nearest neighbor
 
-    for (int i = 0; i < data.size(); i++) {
-        double bestSoFar = INT_MAX;
-        int bestSoFarLoc = 0;
+	int nearestIndex = 0;
+	double tempDistance = 0;
+	double nearestDistance = numeric_limits<double>::max();
 
-        for (int j = 0; j < data.size(); j++) {
-            double distance = 0;
-            if (i != j) {
+// loop through rows and to find row with smallest distance
+// nearest distance is the MINIMUM of distances (given the feature subset)
+	for (int i = 0; i < numInstances; i ++){
 
-                    for (int k = 0; k < featureSet.size(); k++) {
-                        distance += pow( data.at(i).features.at(featureSet.at(k)) - data.at(j).features.at(featureSet.at(k)), 2);
-                    }
+		tempDistance = 0;
 
-                    distance += pow( data.at(i).features.at(featureToAdd) - data.at(j).features.at(featureToAdd), 2);
+		if (i != instIndex){
 
-                distance = sqrt(distance);
+			for (int j = 0; j < featureSubset.size(); j++){
+				tempDistance += pow((dataset[i][featureSubset.at(j)] - dataset[instIndex][featureSubset.at(j)]), 2);
+			}
 
-                if (distance < bestSoFar) {
-                    bestSoFar = distance;
-                    bestSoFarLoc = j;
-                }
-            }
-        }
+			tempDistance = sqrt(tempDistance);
 
-        if (data.at(i).classification == data.at(bestSoFarLoc).classification) {
-            numCorrect++;
-        } 
-    }
-    accuracy = float(numCorrect) / data.size();
-    return accuracy;
+			if (tempDistance < nearestDistance){
+				nearestIndex = i;
+				nearestDistance = tempDistance;
+			}
+		}
+	}
+
+	return dataset[nearestIndex][0];
 }
 
-float leave_one_out_backward(vector<node> data, vector<int> featureSet, int featureToRemove) {
-    int numCorrect = 0;
-    float accuracy = 0;
-    vector<int> newFeatureSet;
+double leaveOneOut (double dataset[MAX_INSTANCES][MAX_FEATURES], vector<int> featureSubset, int numInstances){
+// This function is our leave one out algorithm 
+// returns: accuracy
 
-    for (int i = 0; i < featureSet.size(); i++) {
-        if (featureSet.at(i) != featureToRemove) {
-            newFeatureSet.push_back(featureSet.at(i));
-        }
-    }
+	int numCorrectPredict = 0;
 
-    for (int i = 0; i < data.size(); i++) {
-        double bestSoFar = INT_MAX;
-        int bestSoFarLoc = 0;
+	for (int i = 0; i < numInstances; i++) {
 
-        for (int j = 0; j < data.size(); j++) {
-            double distance = 0;
-            if (i != j) {
+		double prediction = nearestNeighbor(dataset, i, featureSubset, numInstances);
 
-                for (int k = 0; k < newFeatureSet.size(); k++) {
-                        distance += pow( data.at(i).features.at(newFeatureSet.at(k)) - data.at(j).features.at(newFeatureSet.at(k)), 2);
-                }
+		if (dataset[i][0] == prediction){
+			numCorrectPredict++;
+		}
+	}
 
-                distance = sqrt(distance);
-
-                if (distance < bestSoFar) {
-                    bestSoFar = distance;
-                    bestSoFarLoc = j;
-                }
-            }
-        }
-
-        if (data.at(i).classification == data.at(bestSoFarLoc).classification) {
-            numCorrect++;
-        } 
-    }
-    accuracy = float(numCorrect) / data.size();
-    return accuracy;
+//	cout << numCorrectPredict<< endl;
+//	cout << (double(numCorrectPredict)/numInstances * 100) << endl;
+	return (double(numCorrectPredict)/numInstances * 100);
 }
 
-void forward_selection(vector<node> data) {
-    vector<int> featureSet;
-    vector<int> bestFeatures;
-    float overallBest = 0;
-    bool decrease = 0;
-    cout << "Beginning search.\n\n";
+vector<int> forwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures){
+// This function performs a forwardSelection greedy search
+// returns: nothing (prints subset with greatest accuracy)
+	cout << endl;
+	cout << "Beginning search." << endl;
 
-    for (int i = 0; i < data.at(0).features.size(); i++) {
-        int featureToAdd = 0;
-        float bestSoFar = 0;
+	// In forwards selection, we initialize to empty set
+	vector<int> selectedSubset;
+	vector<int> solution;
 
-        for (int j = 0; j < data.at(0).features.size(); j++) {
-            if (find(featureSet.begin(), featureSet.end(), j) == featureSet.end()) {
-                float accuracy = leave_one_out(data, featureSet, j);
+	double tempAccuracy;
+	double maxAccuracy;
+	double maxMaxAccuracy = 0;
+	bool foundSolutionSubset;
 
-                if (accuracy > bestSoFar) {
-                    bestSoFar = accuracy;
-                    featureToAdd = j;
-                }
-            }
-        }
+	int maxIndex;
 
-        cout << "\n";
-        featureSet.push_back(featureToAdd);
+	for (int i = 1; i < numFeatures; i++){
+		foundSolutionSubset = false;
+		maxAccuracy = 0;
+		maxIndex = 0;
+		cout << endl;
+		for (int j = 1; j < numFeatures; j++){
+			//cout << endl;
+			if (!(find(selectedSubset.begin(), selectedSubset.end(), j) != selectedSubset.end())){
+				vector<int> temp = selectedSubset;
+				temp.push_back(j);
 
-        if (bestSoFar > overallBest) {
-            overallBest = bestSoFar;
-            bestFeatures = featureSet;
-        } else if (bestSoFar < overallBest && !decrease) {
-            cout << "WARNING: Accuracy has decreased. Continuing search in case of local maxima.\n\n";
-            decrease = 1;
-        }
+				tempAccuracy = leaveOneOut(dataset, temp, numInstances);
 
-        cout << "Feature set {";
-        for (int x = 0; x < featureSet.size() - 1; x++) {
-            cout << featureSet.at(x) + 1 << ", ";
-        }
-        cout << featureSet.at(featureSet.size() - 1) + 1;
-        cout << "} was best, accuracy is " << setprecision(3) << bestSoFar * 100 << "%\n\n";
-    }
+				// print statement
+				cout << "		Using feature(s) ";
+				printSubset(temp);
+				cout << " accuracy is " << tempAccuracy << "%" << endl;
 
-    cout << "Finished search. The best feature subset is {";
-    for (int i = 0; i < bestFeatures.size() - 1; i++) {
-        cout << bestFeatures.at(i) + 1 << ", ";
-    }
-    cout << bestFeatures.at(bestFeatures.size() - 1) + 1 << "}, which has an accuracy of " << setprecision(3) << overallBest * 100 << "%\n\n";
+				// max accuracy amongst particular set of subsets
+				if (tempAccuracy > maxAccuracy){
+					maxAccuracy = tempAccuracy;
+					maxIndex = j;
+
+					// max accuracy of ALL subsets
+					if (tempAccuracy > maxMaxAccuracy){
+						maxMaxAccuracy = tempAccuracy;
+						foundSolutionSubset = true;
+					}
+				}
+
+			}
+
+		}
+		cout << endl;
+		selectedSubset.push_back(maxIndex);
+
+		if (foundSolutionSubset){
+			solution.push_back(maxIndex);
+		}
+		else{
+			if (selectedSubset.size() != numFeatures - 1){
+			cout << "(Warning: Accuracy has decreased! Continuing search in case of local maxima)" << endl;
+			}
+		}
+
+
+		if (selectedSubset.size() != numFeatures - 1){
+			cout << "Feature set ";
+			printSubset(selectedSubset);
+			cout << " was best, accuracy is, " << maxAccuracy << "%" << endl;
+		}
+	}
+
+	// cout << endl;
+	// cout << "Finished search!! The best feature subset is ";
+	// printSubset(solution);
+	// cout << ", which has an accuracy of " << maxMaxAccuracy << "%" << endl;
+	// cout << endl;
+	return solution;
 }
 
-void backward_elimination(vector<node> data) {
-    vector<int> featureSet;
-    vector<int> bestFeatures;
-    float overallBest = 0;
-    bool decrease = 0;
-    bool outputCheck = 0;
-    cout << "Beginning search.\n\n";
+vector<int> backwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures){
+// This function performs a forwardSelection greedy search
+// returns: nothing (prints subset with greatest accuracy)
 
-    for (int i = 0; i < data.at(0).features.size(); i++) {
-        featureSet.push_back(i);
-    }
+	// in backwards selection, we initialize to set of all features
+	vector<int> selectedSubset;
+	for (int j =1; j < numFeatures; j++) {
+		selectedSubset.push_back(j);
+	}
 
-    cout << "Starting feature set: ";
-    for (int i = 0; i < featureSet.size(); i++) {
-        cout << featureSet.at(i) + 1 << " ";
-    }
-    cout << "\n\n";
+	vector<int> solution = selectedSubset;
 
-    for (int i = 0; i < data.at(0).features.size(); i++) {
-        int featureToRemove = 0;
-        float bestSoFar = 0;
+	double tempAccuracy;
+	double maxAccuracy;
+	double maxMaxAccuracy = leaveOneOut(dataset, selectedSubset, numInstances);
+	bool foundSolutionSubset;
+	int maxIndex;
 
-        for (int j = 0; j < data.at(0).features.size(); j++) {
-            if (find(featureSet.begin(), featureSet.end(), j) != featureSet.end() && featureSet.size() > 1) {
-                float accuracy = leave_one_out_backward(data, featureSet, j);
-                cout << "   Using feature(s) {";
+	cout << "		Using feature(s) ";
+	printSubset(selectedSubset);
+	cout << " accuracy is " << maxMaxAccuracy << "%" << endl;
 
-                for (int x = 0; x < featureSet.size() - 2; x++) {
-                    if (featureSet.at(x) != j) {
-                        cout << featureSet.at(x) + 1 << ", ";
-                    }
-                }
-                if (featureSet.at(featureSet.size() - 2) == j) {
-                    cout << featureSet.at(featureSet.size() - 1) + 1;
-                } else if (featureSet.at(featureSet.size() - 1) == j) {
-                    cout << featureSet.at(featureSet.size() - 2) + 1;
-                } else {
-                    cout << featureSet.at(featureSet.size() - 2) + 1 << ", ";
-                    cout << featureSet.at(featureSet.size() - 1) + 1;
-                }
-                cout << "} accuracy is " << setprecision(3) << accuracy * 100 << "%\n";
+	cout << endl;
+	cout << "Beginning search." << endl;
+	for (int i = 1; i < numFeatures - 1; i++){
+		foundSolutionSubset = false;
+		maxAccuracy = 0;
+		maxIndex = 0;
+		cout << endl;
+		for (int j = 1; j < numFeatures; j++){
+			//cout << endl;
+			if ((find(selectedSubset.begin(), selectedSubset.end(), j) != selectedSubset.end())){
+				vector<int> temp = selectedSubset;
+				temp.erase(remove(temp.begin(), temp.end(), j), temp.end());
 
-                if (accuracy > bestSoFar) {
-                    bestSoFar = accuracy;
-                    featureToRemove = j;
-                }
-            }
-        }
+				tempAccuracy = leaveOneOut(dataset, temp, numInstances);
 
-        cout << "\n";
+				// print statement
+				cout << "		Using feature(s) ";
+				printSubset(temp);
+				cout << " accuracy is " << tempAccuracy << "%" << endl;
 
-        for (int i = 0; i < featureSet.size(); i++) {
-            if (featureSet.at(i) == featureToRemove) {
-                featureSet.erase(featureSet.begin() + i);
-                break;
-            }
-        }
+				// max accuracy amongst particular set of subsets
+				if (tempAccuracy > maxAccuracy){
+					maxAccuracy = tempAccuracy;
+					maxIndex = j;
 
-        if (bestSoFar > overallBest) {
-            overallBest = bestSoFar;
-            bestFeatures = featureSet;
-        } else if (bestSoFar < overallBest && !decrease) {
-            cout << "WARNING: Accuracy has decreased. Continuing search in case of local maxima.\n\n";
-            decrease = 1;
-        }
+					// max accuracy of ALL subsets
+					if (tempAccuracy > maxMaxAccuracy){
+						maxMaxAccuracy = tempAccuracy;
+						foundSolutionSubset = true;
+					}
+				}
 
-        if (featureSet.size() != 1 || (featureSet.size() == 1 && !outputCheck)) {
-            if (featureSet.size() == 1) {
-                outputCheck = 1;
-            }
-            cout << "Feature set {";
-            for (int x = 0; x < featureSet.size() - 1; x++) {
-                cout << featureSet.at(x) + 1 << ", ";
-            }
-            cout << featureSet.at(featureSet.size() - 1) + 1;
-            cout << "} was best, accuracy is " << setprecision(10) << bestSoFar * 100 << "%\n\n";
-        }
+			}
 
-    }
+		}
+		cout << endl;
+		selectedSubset.erase(remove(selectedSubset.begin(), selectedSubset.end(), maxIndex), selectedSubset.end());
 
-    cout << "Finished search. The best feature subset is {";
-    for (int i = 0; i < bestFeatures.size() - 1; i++) {
-        cout << bestFeatures.at(i) + 1 << ", ";
-    }
-    cout << bestFeatures.at(bestFeatures.size() - 1) + 1 << "} which has an accuracy of " << overallBest * 100 << "%\n\n";
+		if (foundSolutionSubset){
+			solution.erase(remove(solution.begin(), solution.end(), maxIndex), solution.end());
+		}
+		else{
+			if (selectedSubset.size() != 1){
+			cout << "(Warning: Accuracy has decreased! Continuing search in case of local maxima)" << endl;
+			}
+		}
 
+		cout << "Feature set ";
+		printSubset(selectedSubset);
+		cout << " was best, accuracy is, " << maxAccuracy << "%" << endl;
+		
+	}
+
+
+	return solution;
 }
 
-vector<int> custom_algorithm(vector<node> data) {
-    vector<int> featureSetForward;
-    vector<int> featureSetBackward;
-    vector<int> bestFeaturesForward;
-    vector<int> bestFeaturesBackward;
-    vector<vector<int> > allBackward;
-    vector<vector<int> > allForward;
-    bool outputCheck = 0;
+int main () {
 
-    for (int i = 0; i < data.at(0).features.size(); i++) {
-        featureSetBackward.push_back(i);
-    }
+	double dataArray[MAX_INSTANCES][MAX_FEATURES];
+	string fileName;
+	ifstream fin;
+	int numFeatures = 0;
+	int numInstances = 0;
+	double accuracy;
+	string line;
+	double word;
+	int input;
 
-    for (int i = 0; i < data.at(0).features.size(); i++) {
-        int featureToAdd = 0;
-        int featureToRemove = 0;
-        float bestSoFarForward = 0;
-        float bestSoFarBackward = 0;
+	cout << endl;
+	cout << endl;
+	cout << "Welcome to Johanna Villacorta's Feature Selection Algorithm" << endl;
 
-        for (int j = 0; j < data.at(0).features.size(); j++) {
-            // doing forward selection
-            if (find(featureSetForward.begin(), featureSetForward.end(), j) == featureSetForward.end()) {
-                float accuracy = leave_one_out(data, featureSetForward, j);
-                if (accuracy > bestSoFarForward) {
-                    bestSoFarForward = accuracy;
-                    featureToAdd = j;
-                }
-            }
+	cout << endl;
+	cout << "Type in the name of the file to test: ";
+	cin >> fileName;
 
-            // doing backward elimination
-            if (find(featureSetBackward.begin(), featureSetBackward.end(), j) != featureSetBackward.end() && featureSetBackward.size() > 1) {
-                float accuracy = leave_one_out_backward(data, featureSetBackward, j);
-                if (accuracy > bestSoFarBackward) {
-                    bestSoFarBackward = accuracy;
-                    featureToRemove = j;
-                }
-            }
+	fin.open(fileName.c_str());
 
-        }
-
-        cout << "\n";
-        featureSetForward.push_back(featureToAdd);
-        allForward.push_back(featureSetForward);
-        if (bestSoFarForward > overallBestForward) {
-            overallBestForward = bestSoFarForward;
-            bestFeaturesForward = featureSetForward;
-        } 
-        for (int x = 0; x < featureSetBackward.size(); x++) {
-            if (featureSetBackward.at(x) == featureToRemove) {
-                featureSetBackward.erase(featureSetBackward.begin() + x);
-                break;
-            }
-        }
-        allBackward.push_back(featureSetBackward);
-        for (int x = 0; x < allForward.size(); x++) {
-            for (int y = 0; y < allBackward.size(); y++) {
-                sort(allForward.at(x).begin(), allForward.at(x).end());
-                sort(allBackward.at(y).begin(), allBackward.at(y).end());
-                if (allForward.at(x) == allBackward.at(y)) {
-                    return allForward.at(x);
-                }
-            }
-        }
-
-        if (bestSoFarBackward > overallBestBackward) {
-            overallBestBackward = bestSoFarBackward;
-            bestFeaturesBackward = featureSetBackward;
-        } 
-
-        cout << "Forward feature set {";
-        for (int x = 0; x < featureSetForward.size() - 1; x++) {
-            cout << featureSetForward.at(x) + 1 << ", ";
-        }
-        cout << featureSetForward.at(featureSetForward.size() - 1) + 1;
-        cout << "} was best, accuracy is " << setprecision(3) << bestSoFarForward * 100 << "%\n\n";
+	if (!fin){
+		cerr << "File could not be opened." << endl;
+		exit(1); 
+	}
 
 
-        if (featureSetBackward.size() != 1) {
-            if (featureSetBackward.size() == 1) {
-                outputCheck = 1;
-            }
-            cout << "Backward feature set {";
-            for (int x = 0; x < featureSetBackward.size() - 1; x++) {
-                cout << featureSetBackward.at(x) + 1 << ", ";
-            }
-            cout << featureSetBackward.at(featureSetBackward.size() - 1) + 1;
-            cout << "} was best, accuracy is " << setprecision(10) << bestSoFarBackward * 100 << "%\n\n";
-        } else {
-            cout << "Backward feature set {" << featureSetBackward.at(0) << "} was best, accuracy is " << setprecision(10) << bestSoFarBackward * 100 << "\n\n";
-        }
-    }
-    if (overallBestForward > overallBestBackward) {
-        return bestFeaturesForward;
-    } else {
-        return bestFeaturesBackward;
-    }
+	// load data file into our program
+	// also, count the number of instances and features
+	while (getline(fin, line)){
+		numFeatures = 0;
+		stringstream s(line);
 
-}
+		while(s >> word){
+			dataArray[numInstances][numFeatures] = word;
+			numFeatures++;
+		}
 
-int main() {
-    vector<node> data;
-    string fileName;
-    int algChoice;
-    ifstream inFile;
-    double temp;
+		numInstances++;
+	}
 
-    cout << "Type in the name of the file you would like to test: " << endl;
-    cin >> fileName;
+	// normalize the data we just ready in
+	normalize(dataArray, numInstances, numFeatures);
 
-    cout << "Type the number of the algorithm you want to run: " << endl;
-    cout << "   1) Forward Selection" << endl;
-    cout << "   2) Backward Elimination" << endl;
-    cout << "   3) Custom Algorithm" << endl;
-    cin >> algChoice;
+	vector<int> allFeaturesSubset;
+	for (int j =1; j < numFeatures; j++) {
+		allFeaturesSubset.push_back(j);
+	}
 
-    inFile.open(fileName);
+	accuracy = leaveOneOut(dataArray, allFeaturesSubset, numInstances);
+	cout << endl;
+	cout << "Running nearest neighbor with all " << numFeatures - 1 
+			<< " features, using \"leave-one-out\" evaluation, I get an accuracy of " << accuracy << "%" << endl;   
 
-    if (!inFile) {
-        cout << "Unable to open file." << endl;
-        exit(1);
-    }
+// Prompt user to input algorithm choice
+// if invalid choice, print an error and re-prompt
+error1:
+		cout << endl;
+		cout << "Type the number of the algorithm you want to run" << endl;
+		cout << endl;
+		cout << "1) Forward Selection" << endl;
+		cout << "2) Backward Selection" << endl;
+		cout << endl;
 
-    while (inFile >> temp) {
-        loadData.push_back(temp);
-    }
+		cin >> input;
 
-    for (int i = 0; i < loadData.size(); i++) {
-        if (loadData.at(i) == 1) {
-            node newNode(1, i);
-            data.push_back(newNode);
-        } else if (loadData.at(i) == 2) {
-            node newNode(2, i);
-            data.push_back(newNode);
-        }
-    }
+		vector<int> solution;
 
-    normalize(data);
-    
-    if (algChoice == 1) {
-        forward_selection(data);
-    } else if (algChoice == 2) {
-        backward_elimination(data);
-    } else {
-        vector<int> match = custom_algorithm(data);
-        cout << "Finished search. The best feature subset is {";
-        for (int i = 0; i < match.size() - 1; i++) {
-            cout << match.at(i) + 1 << ", ";
-        }
-        cout << match.at(match.size() - 1) + 1 << "} which has an accuracy of "; 
-        if (overallBestForward > overallBestBackward) {
-            cout << overallBestForward * 100 << "%\n\n";
-        } else {
-            cout << overallBestBackward * 100 << "\n\n";
-        }
-    }
+		switch(input)
+		{
+			case 1:	
+				solution = forwards(dataArray, numInstances, numFeatures);
+					cout << endl;
+					cout << "Finished search!! The best feature subset is ";
+					printSubset(solution);
+					cout << ", which has an accuracy of " << leaveOneOut(dataArray, solution, numInstances) << "%" << endl;
+					cout << endl;
+				break;
+			case 2:
+				solution = backwards(dataArray, numInstances, numFeatures);
+					cout << endl;
+					cout << "Finished search!! The best feature subset is ";
+					printSubset(solution);
+					cout << ", which has an accuracy of " << leaveOneOut(dataArray, solution, numInstances) << "%" << endl;
+					cout << endl;
+				break;
+			default:
+				cout << "Invalid Entry." << endl;
+				goto error1;
+		}
 
-    inFile.close();
-    return 0;
+
+	return 0;
 }
