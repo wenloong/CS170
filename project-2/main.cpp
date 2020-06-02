@@ -14,7 +14,7 @@ double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,i
 	vector <double> nearest; // nearest neighbor (closest point in training set)
 	
 	for (int i = 0; i < data.size(); i++) {	
-		testingSet = data.at(i); 
+		testingSet = data[i]; 
 		min_dist = 1000000;
 		dist = 0;
 
@@ -22,21 +22,21 @@ double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,i
 			if (j != i) { 
 				tmp = 0;
 				for (int k = 0; k < currentFeatures.size(); k++)  
-					tmp += (pow(testingSet.at(currentFeatures.at(k)) - data[j].at(currentFeatures.at(k)), 2));
+					tmp += (pow(testingSet[currentFeatures[k]] - data[j][currentFeatures[k]], 2));
 				if (isForward)
-					tmp += (pow(testingSet.at(newFeature) - data.at(j).at(newFeature), 2));
+					tmp += (pow(testingSet[newFeature] - data[j][newFeature], 2));
 				dist = sqrt(tmp);
 				if (dist < min_dist) { 
 					min_dist = dist;
-					nearest = data.at(j);
+					nearest = data[j];
 				}
 			}	
 		}	
 		
 		// if predicted/actual classifications are the same, increment numCorrect
-		if (nearest.at(0) == 1 && testingSet.at(0) == 1) 
+		if (nearest[0] == 1 && testingSet[0] == 1) 
 			++numCorrect;
-		else if (nearest.at(0) == 2 && testingSet.at(0) == 2)
+		else if (nearest[0] == 2 && testingSet[0] == 2)
 			++numCorrect;
 	}
 
