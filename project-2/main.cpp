@@ -12,53 +12,25 @@ using namespace std;
    To normalize our data, we will use the min max normalization method as opposed to
    the z-score normalization
 */
-void normalizeData(vector<vector<double>> dataset, int numInstance, int numFeatures) {
+void normalizeData(vector<vector<double>> data, int numInstance, int numFeatures) {
+   vector<double> fMin;
+   vector<double> fMax;
 
-	cout << "This dataset has " << numFeatures - 1 << " features (not including the class attribute), with "
-			<< numInstances << " instances." << endl;
+   for (int i = 0; i < data.at(0).size(); i++) {
+      fMin.push_back(data.at(0).at(i));
+      fMax.push_back(data.at(0).at(i));
+   }
 
-	cout << endl;
-	cout << "Please wait while I normalize the data... ";
+   for (int i = 0; i < data.size(); i++) {
+      for (int j = 0; j < data.at(0).size(); j++) {
+         if (data.at(i).at(j) < fMin.at(j)) { fMin.at(j) = data.at(i).at(j); }
+         if (data.at(i).at(j) > fMax.at(j)) { fMax.at(j) = data.at(i).at(j); }
+      }
+   }
 
-	double sum;
-	double varianceNum;
-	double variance;
-	double mean[numFeatures];
-	double std[numFeatures];
-	
-	// Calculating the mean for each column (feature)
-	for (int j = 1; j < numFeatures; ++j){
-		sum = 0;
-
-		for (int i = 0; i < numInstances; i++){
-			sum += dataset[i][j];
-
-		}
-
-		mean[j] = sum / numInstances;
-	}
-
-	// Calculating the standard deviation for each column (feature)
-	for (int j = 1; j < numFeatures; ++j){
-		varianceNum = 0;
-
-		for (int i = 0; i < numInstances; i++){
-			varianceNum += pow(dataset[i][j] - mean[j], 2);
-
-		}
-
-		variance = varianceNum / numInstances;
-		std[j] = sqrt(variance);
-	}
-
-	// Normalizing each data point
-	for (int i = 0; i < numInstances; i++){
-		for (int j = 1; j < numFeatures; j++){
-			dataset[i][j] = (dataset[i][j] - mean[j]) / std[j];
-		}
-	}
-
-	cout << "Done!" << endl;
+   for (int i = 0; i < data.size(); i++)
+      for (int j = 0; i < data.at(0).size(); j++)
+         data.at(i).at(j) = (data.at(i).at(j) - fMin.at(j)) / (fMax.at(j) - fMin.at(j));
 }
 
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
