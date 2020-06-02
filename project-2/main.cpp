@@ -222,8 +222,7 @@ void backward_elimination(vector<vector<double>> data) {
    double accuracy = 0;
    double maxAccuracy = 0;
    double globalMaxAccuracy = 0;
-
-   int removedFeature;
+   int maxIn;
 		
    for (int i = 1; i < data[0].size(); i++) 
       currentFeatures.push_back(i);
@@ -233,7 +232,6 @@ void backward_elimination(vector<vector<double>> data) {
 	   
       for (int j = 1; j < data[0].size(); j++) { 
          if (find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
-            //vector<int> temp = removeFeature(currentFeatures, removedFeature);
             vector<int> temp = currentFeatures;
             temp.erase(remove(temp.begin(), temp.end(), j), temp.end());
 
@@ -246,12 +244,12 @@ void backward_elimination(vector<vector<double>> data) {
             cout << accuracy * 100 << "%" << endl;
             if (accuracy > maxAccuracy) {
                maxAccuracy = accuracy;
+               maxIn = j;
             }
          }
       }
 	   
-      //currentFeatures = removeFeature(currentFeatures, removedFeature);
-      currentFeatures.erase(remove(currentFeatures.begin(), currentFeatures.end(), globalMaxAccuracy), currentFeatures.end());
+      currentFeatures.erase(remove(currentFeatures.begin(), currentFeatures.end(), maxIn), currentFeatures.end());
       cout << endl;
 	   
       if (maxAccuracy > globalMaxAccuracy) {
