@@ -19,7 +19,6 @@ void displaySubset(vector<int> feature, int accu);
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward);
 double nearest_neighbour(vector<vector<double>> data, int numFeatures);
 void forward_selection(vector< vector<double> > data);
-vector<int> removeFeature(vector<int> currentFeatures, int removedFeature);
 void backward_elimination(vector< vector<double>> data);
 
 int main() {
@@ -68,7 +67,6 @@ int main() {
    if (algoChoice == 1) { forward_selection(data); } 
    else if (algoChoice == 2) { backward_elimination(data); }
 }
-
 
 /*
    To normalize our data, we will use the min max normalization method as opposed to
@@ -156,11 +154,8 @@ double nearest_neighbour(vector<vector<double>> data, int numFeatures) {
 }
 
 void forward_selection(vector<vector<double> > data) {
-   vector<int> currentFeatures; // current set of features being tested
-   vector<int> bestFeatures; // set of features with highest accuracy 
-   double accuracy = 0; 
-   double maxAccuracy = 0; // highest accuracy to a certain point
-   double globalMaxAccuracy = 0; // highest accuracy overall
+   vector<int> currentFeatures, bestFeatures;
+   double accuracy = 0, maxAccuracy = 0, globalMaxAccuracy = 0;
    int addedFeature;
 	
    for (int i = 1; i < data[0].size(); i++) {
@@ -203,17 +198,6 @@ void forward_selection(vector<vector<double> > data) {
    cout << "Finished search! The best feature subset is {";
    displaySubset(bestFeatures);
    cout << globalMaxAccuracy * 100 << "%" << endl << RESET;
-}
-
-// helper function for backward elimination (removes feature from vector)
-vector<int> removeFeature(vector<int> currentFeatures, int removedFeature) {
-   for (int i = 0; i < currentFeatures.size(); i++) {
-      if (currentFeatures[i] == removedFeature) {
-         currentFeatures.erase(currentFeatures.begin() + i);
-         return currentFeatures;
-      }
-   }
-   return currentFeatures;
 }
 
 void backward_elimination(vector<vector<double>> data) {
