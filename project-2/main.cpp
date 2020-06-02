@@ -16,21 +16,23 @@ void normalizeData(vector<vector<double>> data) {
    vector<double> fMin;
    vector<double> fMax;
 
-   for (int i = 0; i < data.at(0).size(); i++) {
-      fMin.push_back(data.at(0).at(i));
-      fMax.push_back(data.at(0).at(i));
+   for (int i = 0; i < data[0].size(); i++) {
+      fMin.push_back(data[0][i]);
+      fMax.push_back(data[0][i]);
    }
 
    for (int i = 0; i < data.size(); i++) {
-      for (int j = 0; j < data.at(0).size(); j++) {
-         if (data.at(i).at(j) < fMin.at(j)) { fMin.at(j) = data.at(i).at(j); }
-         if (data.at(i).at(j) > fMax.at(j)) { fMax.at(j) = data.at(i).at(j); }
+      for (int j = 0; j < data[0].size(); j++) {
+         if (data[i][j] < fMin[j]) { fMin[j] = data[i][j]; }
+         if (data[i][j] > fMax[j]) { fMax[j] = data[i][j]; }
       }
    }
 
-   for (int i = 0; i < data.size(); i++)
-      for (int j = 0; i < data.at(0).size(); j++)
-         data.at(i).at(j) = (data.at(i).at(j) - fMin.at(j)) / (fMax.at(j) - fMin.at(j));
+   for (int i = 0; i < data.size(); i++) {
+      for (int j = 0; i < data[0].size(); j++) {
+         data[i][j] = (data[i][j] - fMin[j]) / (fMax[j] - fMin[j]);
+      }
+   }
 }
 
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
