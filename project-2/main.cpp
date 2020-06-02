@@ -205,7 +205,7 @@ void displaySubset(vector<int> feature, int accu) {
    for (int i = 0; i < feature.size() - 1; i++) {
       cout << feature[i] << ", ";
    }
-   cout << feature[feature.size() - 1] << "} was the best, with accuracy " << acc * 100 << "%" << endl;
+   cout << feature[feature.size() - 1] << "} was the best, with accuracy " << accu * 100 << "%" << endl;
 }
 
 int main() {
@@ -213,7 +213,6 @@ int main() {
    vector<vector<double>> dataset;
    double acc = 0.0;
    double data = 0.0;
-   int algoChoice;
     
    cout << "Enter the name of the file you want to test: ";
    cin >> filename;
@@ -253,6 +252,6 @@ int main() {
 	
    cout << "Beginning search..." << endl << endl;
 	
-   if (algoChoice == 1) { forwardSelection(dataset); } 
-   else if (algoChoice == 2) { backwardElim(dataset); }
+   if (choice == 1) { forwardSelection(dataset); } 
+   else if (choice == 2) { backwardElim(dataset); }
 }
