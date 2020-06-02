@@ -7,9 +7,9 @@
 #include <stdlib.h>
 using namespace std;
 
-double leaveOneOut(vector< vector<double> > data,vector<int> currFeatures,int newFeature,bool isForward) {
+double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
 	int numCorrect = 0; // number of correct classifications
-	double tmp, accuracy, min_dist, dist = 0;
+	double tmp, min_dist, dist = 0;
 	vector <double> testingSet;
 	vector <double> nearest; // nearest neighbor (closest point in training set)
 	
@@ -21,8 +21,8 @@ double leaveOneOut(vector< vector<double> > data,vector<int> currFeatures,int ne
 		for (int j = 0; j < data.size(); j++) { 
 			if (j != i) { 
 				tmp = 0;
-				for (int k = 0; k < currFeatures.size(); k++)  
-					tmp += (pow(testingSet.at(currFeatures.at(k)) - data.at(j).at(currFeatures.at(k)), 2));
+				for (int k = 0; k < currentFeatures.size(); k++)  
+					tmp += (pow(testingSet.at(currentFeatures.at(k)) - data.at(j).at(currentFeatures.at(k)), 2));
 				if (isForward)
 					tmp += (pow(testingSet.at(newFeature) - data.at(j).at(newFeature), 2));
 				dist = sqrt(tmp);
@@ -39,25 +39,24 @@ double leaveOneOut(vector< vector<double> > data,vector<int> currFeatures,int ne
 		else if (nearest.at(0) == 2 && testingSet.at(0) == 2)
 			++numCorrect;
 	}
-	
-	accuracy = (double)numCorrect / (double)data.size();
-	return accuracy;
+
+	return (double)numCorrect / (double)data.size();
 }
 
-void NN(vector< vector<double> > data, int numFeatures) {
-	vector<int> currFeatures;
+void nearest_neighbour(vector<vector<double>> data, int numFeatures) {
+	vector<int> currentFeatures;
+
 	for (int i = 1; i < numFeatures; i++)
-		currFeatures.push_back(i);
+		currentFeatures.push_back(i);
 	
-	double accuracy = leaveOneOut(data,currFeatures,0,false);
+	double accuracy = leave_one_out(data,currentFeatures,0,false);
 				
-	cout << "Running nearest neighbor with all " << numFeatures-1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of " << accuracy * 100 << "%" << endl << endl;
-				
-	return;
+	cout << "Running nearest neighbor with all " << numFeatures - 1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of ";
+   cout << leave_one_out(data,currentFeatures,0,false) << "%" << endl << endl;
 }
 
 void forwardSelection(vector< vector<double> > data) {
-	vector<int> currFeatures; // current set of features being tested
+	vector<int> currentFeatures; // current set of features being tested
 	vector<int> bestFeatures; // set of features with highest accuracy 
 	double accuracy = 0; 
 	double bestAccuracy = 0; // highest accuracy to a certain point
@@ -67,12 +66,12 @@ void forwardSelection(vector< vector<double> > data) {
 	for (int i = 1; i < data.at(0).size(); i++) {
 		bestAccuracy = 0;
 		for (int j = 1; j < data.at(0).size(); j++) { 
-			if (std::find(currFeatures.begin(), currFeatures.end(), j) == currFeatures.end()) {
-				accuracy = leaveOneOut(data,currFeatures, j, true);
+			if (std::find(currentFeatures.begin(), currentFeatures.end(), j) == currentFeatures.end()) {
+				accuracy = leave_one_out(data,currentFeatures, j, true);
 				
 				cout << "\tUsing feature(s) {";
-				for (int k = 0; k < currFeatures.size(); k++) 
-					cout << currFeatures.at(k) << ",";
+				for (int k = 0; k < currentFeatures.size(); k++) 
+					cout << currentFeatures.at(k) << ",";
 				cout << j << "} accuracy is ";
 
 				cout << accuracy * 100 << "%" << endl;
@@ -82,19 +81,19 @@ void forwardSelection(vector< vector<double> > data) {
 				}
 			}
 		}
-		currFeatures.push_back(addedFeature);
+		currentFeatures.push_back(addedFeature);
 		cout << endl;
 		if (bestAccuracy > maxAccuracy) {
 			maxAccuracy = bestAccuracy;
-			bestFeatures = currFeatures;
+			bestFeatures = currentFeatures;
 		}
 		else {
 			cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
 		}
 		cout << "Feature set {";
-		for (int k = 0; k < currFeatures.size() - 1; k++)
-			cout << currFeatures.at(k) << ",";
-		cout << currFeatures.at(currFeatures.size() - 1);
+		for (int k = 0; k < currentFeatures.size() - 1; k++)
+			cout << currentFeatures.at(k) << ",";
+		cout << currentFeatures.at(currentFeatures.size() - 1);
 		cout <<"} was best, accuracy is ";
 		cout << bestAccuracy * 100 << "%" << endl << endl;
 	}
@@ -109,18 +108,18 @@ void forwardSelection(vector< vector<double> > data) {
 }
 
 // helper function for backward elimination (removes feature from vector)
-vector <int> removeFeature(vector<int> currFeatures, int removedFeature) {
-	for (int i = 0; i < currFeatures.size(); i++) {
-		if (currFeatures.at(i) == removedFeature) {
-			currFeatures.erase(currFeatures.begin() + i);
-			return currFeatures;
+vector <int> removeFeature(vector<int> currentFeatures, int removedFeature) {
+	for (int i = 0; i < currentFeatures.size(); i++) {
+		if (currentFeatures.at(i) == removedFeature) {
+			currentFeatures.erase(currentFeatures.begin() + i);
+			return currentFeatures;
 		}
 	}
-	return currFeatures;
+	return currentFeatures;
 }
 
 void backwardElim(vector< vector<double> > data) {
-	vector <int> currFeatures;
+	vector <int> currentFeatures;
 	vector <int> bestFeatures;
 	double accuracy = 0;
 	double bestAccuracy = 0;
@@ -128,19 +127,19 @@ void backwardElim(vector< vector<double> > data) {
 	int removedFeature;
 		
 	for (int i = 1; i < data.at(0).size(); i++) 
-		currFeatures.push_back(i);
+		currentFeatures.push_back(i);
 	
 	for (int i = 1; i < data.at(0).size() - 1; i++) {
 		bestAccuracy = 0;
 		for (int j = 1; j < data.at(0).size(); j++) { 
-			if (std::find(currFeatures.begin(), currFeatures.end(), j) != currFeatures.end()) {
-				vector <int> tmp = removeFeature(currFeatures, j);
+			if (std::find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
+				vector <int> tmp = removeFeature(currentFeatures, j);
 				cout << "\tUsing feature(s) {";
 				for (int k = 0; k < tmp.size() - 1; k++)
 					cout << tmp.at(k) << ",";
 				cout << tmp.at(tmp.size() - 1) << "} accuracy is ";
 
-				accuracy = leaveOneOut(data, tmp, j, false);
+				accuracy = leave_one_out(data, tmp, j, false);
 				cout << accuracy * 100 << "%" << endl;
 				if (accuracy > bestAccuracy) {
 					bestAccuracy = accuracy;
@@ -148,18 +147,18 @@ void backwardElim(vector< vector<double> > data) {
 				}
 			}
 		}
-		currFeatures = removeFeature(currFeatures, removedFeature);
+		currentFeatures = removeFeature(currentFeatures, removedFeature);
 		cout << endl;
 		if (bestAccuracy > maxAccuracy) {
 			maxAccuracy = bestAccuracy;
-			bestFeatures = currFeatures;
+			bestFeatures = currentFeatures;
 		}
 		else
 			cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
 		cout << "Feature set {";
-		for (int k = 0; k < currFeatures.size() - 1; k++)
-			cout << currFeatures.at(k) << ",";
-		cout << currFeatures.at(currFeatures.size() - 1);
+		for (int k = 0; k < currentFeatures.size() - 1; k++)
+			cout << currentFeatures.at(k) << ",";
+		cout << currentFeatures.at(currentFeatures.size() - 1);
 		cout <<"} was best, accuracy is ";
 		cout << bestAccuracy * 100 << "%" << endl << endl;
 	}
@@ -186,8 +185,7 @@ int main() {
 	if (!file.is_open()) {
 		cout << "Error: unable to open file." << endl;
 		return 0;
-	}
-	else {
+	} else {
 		while (getline(file, line)) {
 			stringstream lineStream(line);
 			vector<double> instance;
@@ -212,7 +210,7 @@ int main() {
 	cout << endl;
 	cout << "This dataset has " << dataset.at(0).size() - 1 << " features (not including the class attribute), with " << dataset.size() << " instances." << endl << endl;
 
-	NN(dataset, dataset.at(0).size());
+	nearest_neighbour(dataset, dataset.at(0).size());
 	
 	cout << "Beginning search..." << endl << endl;
 	
