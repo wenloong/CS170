@@ -213,6 +213,7 @@ int main() {
    vector<vector<double>> dataset;
    double acc = 0.0;
    double data = 0.0;
+   int algoChoice;
     
    cout << "Enter the name of the file you want to test: ";
    cin >> filename;
@@ -252,6 +253,6 @@ int main() {
 	
    cout << "Beginning search..." << endl << endl;
 	
-   if (choice == 1) { forwardSelection(dataset); } 
-   else if (choice == 2) { backwardElim(dataset); }
+   if (algoChoice == 1) { forwardSelection(dataset); } 
+   else if (algoChoice == 2) { backwardElim(dataset); }
 }
