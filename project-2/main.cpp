@@ -8,8 +8,11 @@
 
 using namespace std;
 
-char NORMAL[] = { 0x1b, '[', '0', ';', '3', '7', 'm', 0 };
-char BLUE[] = { 0x1b, '[', '0', ';', '3', '4', 'm', 0 };
+char RESET[] = { 0x1b, '[', '0', ';', '3', '7', 'm', 0 };
+char BOLD[] = { 0x1b, '[', '1', ';', '3', '7', 'm', 0 };
+char RED[] = { 0x1b, '[', '0', ';', '3', '1', 'm', 0 };
+char GREEN[] = { 0x1b, '[', '0', ';', '3', '2', 'm', 0 };
+char YELLOW[] = { 0x1b, '[', '0', ';', '3', '3', 'm', 0 };
 
 void normalizeData(vector<vector<double>> data);
 void displaySubset(vector<int> feature, int accu);
@@ -25,13 +28,13 @@ int main() {
    double dataInput = 0.0;
    int algoChoice;
     
-   cout << BLUE << "Enter the name of the file you want to test: ";
+   cout << BOLD << "Enter the name of the file you want to test: " << RESET;
    cin >> filename;
    cout << endl;
     
    ifstream file(filename.c_str());
    if (!file.is_open()) {
-      cout << "Error: unable to open file." << endl;
+      cout << RED << "Error: unable to open file." << RESET << endl;
       return 0;
    } else {
       while (getline(file, line)) {
@@ -47,13 +50,13 @@ int main() {
    }
 
    cout << endl;
-   cout << "Choose an algorithm" << endl;
+   cout << YELLOW << "Choose an algorithm" << endl;
 	cout << endl;
 	cout << "1) Forward Selection" << endl;
 	cout << "2) Backward Selection" << endl;
-	cout << endl;
+	cout << RESET << endl;
 
-   cout << "Enter your selection: ";
+   cout << BOLD << "Enter your selection: " << RESET;
    cin >> algoChoice;
    cout << endl;
 
