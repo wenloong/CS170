@@ -17,7 +17,7 @@ char YELLOW[] = { 0x1b, '[', '0', ';', '3', '3', 'm', 0 };
 void normalizeData(vector<vector<double>> data);
 void displaySubset(vector<int> feature, int accu);
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward);
-void nearest_neighbour(vector<vector<double>> data, int numFeatures);
+double nearest_neighbour(vector<vector<double>> data, int numFeatures);
 void forward_selection(vector< vector<double> > data);
 vector<int> removeFeature(vector<int> currentFeatures, int removedFeature);
 void backward_elimination(vector< vector<double>> data);
@@ -233,6 +233,8 @@ void backward_elimination(vector<vector<double>> data) {
 	   
       for (int j = 1; j < data[0].size(); j++) { 
          if (find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
+            vector<int> temp;
+            
             temp.erase(remove(temp.begin(), temp.end(), j), temp.end());
             cout << "Using feature(s) {";
             for (int k = 0; k < temp.size() - 1; k++)
