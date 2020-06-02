@@ -18,9 +18,8 @@ void backwardElim(vector< vector<double>> data);
 
 int main() {
    string filename, line;
-   vector<vector<double>> dataset;
-   double acc = 0.0;
-   double data = 0.0;
+   vector<vector<double>> data;
+   double dataInput = 0.0;
    int algoChoice;
     
    cout << "Enter the name of the file you want to test: ";
@@ -36,10 +35,10 @@ int main() {
          stringstream lineStream(line);
          vector<double> instance;
 			
-         while (lineStream >> data) {
-            instance.push_back(data);
+         while (lineStream >> dataInput) {
+            instance.push_back(dataInput);
          }
-         dataset.push_back(instance);
+         data.push_back(instance);
       }
       file.close();
    }
@@ -55,14 +54,14 @@ int main() {
    cin >> algoChoice;
    cout << endl;
 
-   cout << "This dataset has " << dataset.at(0).size() - 1 << " features (not including the class attribute), with " << dataset.size() << " instances." << endl << endl;
+   cout << "This data has " << data[0].size() - 1 << " features (not including the class attribute), with " << data.size() << " instances." << endl << endl;
 
-   nearest_neighbour(dataset, dataset.at(0).size());
+   nearest_neighbour(data, data[0].size());
 	
    cout << "Beginning search..." << endl << endl;
 	
-   if (algoChoice == 1) { forwardSelection(dataset); } 
-   else if (algoChoice == 2) { backwardElim(dataset); }
+   if (algoChoice == 1) { forwardSelection(data); } 
+   else if (algoChoice == 2) { backwardElim(data); }
 }
 
 
@@ -157,26 +156,26 @@ void forwardSelection(vector< vector<double> > data) {
    vector<int> currentFeatures; // current set of features being tested
    vector<int> bestFeatures; // set of features with highest accuracy 
    double accuracy = 0; 
-   double bestAccuracy = 0; // highest accuracy to a certain point
-   double maxAccuracy = 0; // highest accuracy overall
+   double maxAccuracy = 0; // highest accuracy to a certain point
+   double globalMaxAccuracy = 0; // highest accuracy overall
    int addedFeature;
 	
-   for (int i = 1; i < data.at(0).size(); i++) {
-      bestAccuracy = 0;
+   for (int i = 1; i < data[0].size(); i++) {
+      maxAccuracy = 0;
       
-      for (int j = 1; j < data.at(0).size(); j++) { 
+      for (int j = 1; j < data[0].size(); j++) { 
          if (find(currentFeatures.begin(), currentFeatures.end(), j) == currentFeatures.end()) {
             accuracy = leave_one_out(data,currentFeatures, j, true);
 				
             cout << "\tUsing feature(s) {";
             for (int k = 0; k < currentFeatures.size(); k++) 
-               cout << currentFeatures.at(k) << ",";
+               cout << currentFeatures[k] << ",";
             cout << j << "} accuracy is ";
             cout << accuracy * 100 << "%" << endl;
 
-            if (accuracy > bestAccuracy) {
+            if (accuracy > maxAccuracy) {
                addedFeature = j;
-               bestAccuracy = accuracy;
+               maxAccuracy = accuracy;
             }
          }
       }
@@ -184,32 +183,27 @@ void forwardSelection(vector< vector<double> > data) {
       currentFeatures.push_back(addedFeature);
       cout << endl;
 
-      if (bestAccuracy > maxAccuracy) {
-         maxAccuracy = bestAccuracy;
+      if (maxAccuracy > globalMaxAccuracy) {
+         globalMaxAccuracy = maxAccuracy;
          bestFeatures = currentFeatures;
       } else {
          cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
       }
 	   
       cout << "Feature set {";
-      for (int k = 0; k < currentFeatures.size() - 1; k++)
-         cout << currentFeatures.at(k) << ",";
-      cout << currentFeatures.at(currentFeatures.size() - 1);
-      cout <<"} was best, accuracy is ";
-      cout << bestAccuracy * 100 << "%" << endl << endl;
+      displaySubset(currentFeatures);
+      cout << maxAccuracy * 100 << "%" << endl << endl;
    }
 	
    cout << "Finished search!! The best feature subset is {";
-   for (int k = 0; k < bestFeatures.size() - 1; k++)
-      cout << bestFeatures.at(k) << ",";
-   cout << bestFeatures.at(bestFeatures.size() - 1);
-   cout << "}, which has an accuracy of " << maxAccuracy * 100 << "%" << endl;
+   displaySubset(bestFeatures);
+   cout << globalMaxAccuracy * 100 << "%" << endl;
 }
 
 // helper function for backward elimination (removes feature from vector)
 vector<int> removeFeature(vector<int> currentFeatures, int removedFeature) {
    for (int i = 0; i < currentFeatures.size(); i++) {
-      if (currentFeatures.at(i) == removedFeature) {
+      if (currentFeatures[i] == removedFeature) {
          currentFeatures.erase(currentFeatures.begin() + i);
          return currentFeatures;
       }
@@ -221,19 +215,19 @@ void backwardElim(vector< vector<double>> data) {
    vector <int> currentFeatures;
    vector <int> bestFeatures;
    double accuracy = 0;
-   double bestAccuracy = 0;
    double maxAccuracy = 0;
+   double globalMaxAccuracy = 0;
    int removedFeature;
 		
-   for (int i = 1; i < data.at(0).size(); i++) 
+   for (int i = 1; i < data[0].size(); i++) 
       currentFeatures.push_back(i);
 	
-   for (int i = 1; i < data.at(0).size() - 1; i++) {
-      bestAccuracy = 0;
+   for (int i = 1; i < data[0].size() - 1; i++) {
+      maxAccuracy = 0;
 	   
-      for (int j = 1; j < data.at(0).size(); j++) { 
+      for (int j = 1; j < data[0].size(); j++) { 
          if (find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
-            vector <int> tmp = removeFeature(currentFeatures, j);
+            vector<int> tmp = removeFeature(currentFeatures, j);
             cout << "\tUsing feature(s) {";
             for (int k = 0; k < tmp.size() - 1; k++)
                cout << tmp.at(k) << ",";
@@ -241,8 +235,8 @@ void backwardElim(vector< vector<double>> data) {
 		 
 	         accuracy = leave_one_out(data, tmp, j, false);
             cout << accuracy * 100 << "%" << endl;
-            if (accuracy > bestAccuracy) {
-               bestAccuracy = accuracy;
+            if (accuracy > maxAccuracy) {
+               maxAccuracy = accuracy;
                removedFeature = j;
             }
          }
@@ -251,8 +245,8 @@ void backwardElim(vector< vector<double>> data) {
       currentFeatures = removeFeature(currentFeatures, removedFeature);
       cout << endl;
 	   
-      if (bestAccuracy > maxAccuracy) {
-         maxAccuracy = bestAccuracy;
+      if (maxAccuracy > globalMaxAccuracy) {
+         globalMaxAccuracy = maxAccuracy;
          bestFeatures = currentFeatures;
       } else {
          cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
@@ -260,10 +254,10 @@ void backwardElim(vector< vector<double>> data) {
 
       cout << "Feature set {";
       displaySubset(currentFeatures);
-      cout << bestAccuracy * 100 << "%" << endl;
+      cout << maxAccuracy * 100 << "%" << endl;
    }
 
    cout << "Finished search! The best feature subset is {";
    displaySubset(bestFeatures);
-   cout << maxAccuracy * 100 << "%" << endl;
+   cout << globalMaxAccuracy * 100 << "%" << endl;
 }
