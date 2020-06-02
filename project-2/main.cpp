@@ -7,11 +7,11 @@
 #include <stdlib.h>
 using namespace std;
 
-float leaveOneOut(vector< vector<float> > data,vector<int> currFeatures,int newFeature,bool isForward) {
+double leaveOneOut(vector< vector<double> > data,vector<int> currFeatures,int newFeature,bool isForward) {
 	int numCorrect = 0; // number of correct classifications
-	float tmp, accuracy, min_dist, dist = 0;
-	vector <float> testingSet;
-	vector <float> nearest; // nearest neighbor (closest point in training set)
+	double tmp, accuracy, min_dist, dist = 0;
+	vector <double> testingSet;
+	vector <double> nearest; // nearest neighbor (closest point in training set)
 	
 	for (int i = 0; i < data.size(); i++) {	
 		testingSet = data.at(i); 
@@ -40,28 +40,28 @@ float leaveOneOut(vector< vector<float> > data,vector<int> currFeatures,int newF
 			++numCorrect;
 	}
 	
-	accuracy = (float)numCorrect / (float)data.size();
+	accuracy = (double)numCorrect / (double)data.size();
 	return accuracy;
 }
 
-void NN(vector< vector<float> > data, int numFeatures) {
+void NN(vector< vector<double> > data, int numFeatures) {
 	vector<int> currFeatures;
 	for (int i = 1; i < numFeatures; i++)
 		currFeatures.push_back(i);
 	
-	float accuracy = leaveOneOut(data,currFeatures,0,false);
+	double accuracy = leaveOneOut(data,currFeatures,0,false);
 				
 	cout << "Running nearest neighbor with all " << numFeatures-1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of " << accuracy * 100 << "%" << endl << endl;
 				
 	return;
 }
 
-void forwardSelection(vector< vector<float> > data) {
+void forwardSelection(vector< vector<double> > data) {
 	vector<int> currFeatures; // current set of features being tested
 	vector<int> bestFeatures; // set of features with highest accuracy 
-	float accuracy = 0; 
-	float bestAccuracy = 0; // highest accuracy to a certain point
-	float maxAccuracy = 0; // highest accuracy overall
+	double accuracy = 0; 
+	double bestAccuracy = 0; // highest accuracy to a certain point
+	double maxAccuracy = 0; // highest accuracy overall
 	int addedFeature;
 	
 	for (int i = 1; i < data.at(0).size(); i++) {
@@ -119,12 +119,12 @@ vector <int> removeFeature(vector<int> currFeatures, int removedFeature) {
 	return currFeatures;
 }
 
-void backwardElim(vector< vector<float> > data) {
+void backwardElim(vector< vector<double> > data) {
 	vector <int> currFeatures;
 	vector <int> bestFeatures;
-	float accuracy = 0;
-	float bestAccuracy = 0;
-	float maxAccuracy = 0;
+	double accuracy = 0;
+	double bestAccuracy = 0;
+	double maxAccuracy = 0;
 	int removedFeature;
 		
 	for (int i = 1; i < data.at(0).size(); i++) 
@@ -171,16 +171,12 @@ void backwardElim(vector< vector<float> > data) {
 	cout << "}, which has an accuracy of " << maxAccuracy * 100 << "%" << endl;
 }
 
-//void mySearch(vector < vector <float> > data) {
-//	
-//}
-
 int main() {
     
     string filename, line;
-    vector< vector<float> > dataset;
-    float acc = 0.0;
-    float data = 0.0;
+    vector< vector<double> > dataset;
+    double acc = 0.0;
+    double data = 0.0;
     
     cout << "Welcome to Sabrina Chen's Feature Selection Algorithm." << endl << "Type in the name of the file to test: ";
     cin >> filename;
@@ -194,7 +190,7 @@ int main() {
 	else {
 		while (getline(file, line)) {
 			stringstream lineStream(line);
-			vector<float> instance;
+			vector<double> instance;
 			
 			while (lineStream >> data) {
 				instance.push_back(data);
