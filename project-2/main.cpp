@@ -8,6 +8,31 @@
 
 using namespace std;
 
+/*
+   To normalize our data, we will use the min max normalization method as opposed to
+   the z-score normalization
+*/
+void normalizeData(vector<vector<double>> data) {
+   vector<double> fMin;
+   vector<double> fMax;
+
+   for (int i = 0; i < data.at(0).size(); i++) {
+      fMin.push_back(data.at(0).at(i));
+      fMax.push_back(data.at(0).at(i));
+   }
+
+   for (int i = 0; i < data.size(); i++) {
+      for (int j = 0; j < data.at(0).size(); j++) {
+         if (data.at(i).at(j) < fMin.at(j)) { fMin.at(j) = data.at(i).at(j); }
+         if (data.at(i).at(j) > fMax.at(j)) { fMax.at(j) = data.at(i).at(j); }
+      }
+   }
+
+   for (int i = 0; i < data.size(); i++)
+      for (int j = 0; i < data.at(0).size(); j++)
+         data.at(i).at(j) = (data.at(i).at(j) - fMin.at(j)) / (fMax.at(j) - fMin.at(j));
+}
+
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
    int numCorrect = 0; // number of correct classifications
    double tmp, min_dist, dist = 0;
@@ -211,7 +236,8 @@ int main() {
 	while (choice < 1 || choice > 3) {
 		cin >> choice;
 	}
-	
+
+	normalizeData(dataset);
 	cout << endl;
 	cout << "This dataset has " << dataset.at(0).size() - 1 << " features (not including the class attribute), with " << dataset.size() << " instances." << endl << endl;
 
