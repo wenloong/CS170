@@ -18,14 +18,14 @@ void normalizeData(vector<vector<double>> data);
 void displaySubset(vector<int> feature, int accu);
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward);
 void nearest_neighbour(vector<vector<double>> data, int numFeatures);
-void forwardSelection(vector< vector<double> > data);
+void forward_selection(vector< vector<double> > data);
 vector<int> removeFeature(vector<int> currentFeatures, int removedFeature);
-void backwardElim(vector< vector<double>> data);
+void backward_elimination(vector< vector<double>> data);
 
 int main() {
    string filename, line;
    vector<vector<double>> data;
-   double dataInput = 0.0;
+   double dataInput = 0;
    int algoChoice;
     
    cout << BOLD << "Enter the name of the file you want to test: " << RESET;
@@ -35,25 +35,24 @@ int main() {
    ifstream file(filename.c_str());
    if (!file.is_open()) {
       cout << RED << "Error: unable to open file." << RESET << endl;
-      return 0;
-   } else {
-      while (getline(file, line)) {
-         stringstream lineStream(line);
-         vector<double> instance;
-			
-         while (lineStream >> dataInput) {
-            instance.push_back(dataInput);
-         }
-         data.push_back(instance);
-      }
-      file.close();
+      exit(1);
    }
+
+   while (getline(file, line)) {
+      stringstream lineStream(line);
+      vector<double> instance;
+			
+      while (lineStream >> dataInput) {
+         instance.push_back(dataInput);
+      }
+      data.push_back(instance);
+   }
+   file.close();
 	
    cout << YELLOW << "Choose an algorithm" << endl;
-	cout << endl;
-	cout << "1) Forward Selection" << endl;
-	cout << "2) Backward Selection" << endl;
-	cout << RESET << endl;
+   cout << "1) Forward Selection" << endl;
+   cout << "2) Backward Selection" << endl;
+   cout << RESET << endl;
 
    cout << BOLD << "Enter your selection: " << RESET;
    cin >> algoChoice;
@@ -61,12 +60,13 @@ int main() {
 
    cout << "This data has " << data[0].size() - 1 << " features (not including the class attribute), with " << data.size() << " instances." << endl << endl;
 
-   nearest_neighbour(data, data[0].size());
-	
-   cout << "Beginning search..." << endl << endl;
-	
-   if (algoChoice == 1) { forwardSelection(data); } 
-   else if (algoChoice == 2) { backwardElim(data); }
+   double accuracy = nearest_neighbour(data, data[0].size());
+   cout << accuracy << "%" << endl << endl;
+
+
+   cout << endl;
+   if (algoChoice == 1) { forward_selection(data); } 
+   else if (algoChoice == 2) { backward_elimination(data); }
 }
 
 
@@ -78,12 +78,10 @@ void normalizeData(vector<vector<double>> data) {
    vector<double> fMin;
    vector<double> fMax;
 
-
    for (int i = 0; i < data[0].size(); i++) {
       fMin.push_back(data[0][i]);
       fMax.push_back(data[0][i]);
    }
-
 
    for (int i = 0; i < data.size(); i++) {
       for (int j = 0; j < data[0].size(); j++) {
@@ -108,7 +106,7 @@ void displaySubset(vector<int> feature) {
 
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
    int numCorrect = 0; // number of correct classifications
-   double tmp, min_dist, dist = 0;
+   double temp, min_dist, dist = 0;
    vector <double> testingSet;
    vector <double> nearest; // nearest neighbor (closest point in training set)
 	
@@ -119,21 +117,21 @@ double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,i
 
       for (int j = 0; j < data.size(); j++) { 
          if (j != i) { 
-            tmp = 0;
+            temp = 0;
 		 
             for (int k = 0; k < currentFeatures.size(); k++) {
-               tmp += (pow(testingSet[currentFeatures[k]] - data[j][currentFeatures[k]], 2));
-	    }
+               temp += (pow(testingSet[currentFeatures[k]] - data[j][currentFeatures[k]], 2));
+	         }
             if (isForward) {
-                  tmp += (pow(testingSet[newFeature] - data[j][newFeature], 2));
-	    }
-            dist = sqrt(tmp);
+                  temp += (pow(testingSet[newFeature] - data[j][newFeature], 2));
+            }
+            dist = sqrt(temp);
 		 
             if (dist < min_dist) { 
                min_dist = dist;
                nearest = data[j];
             }
-	 }	
+         }	
       }	
 
       // if predicted/actual classifications are the same, increment numCorrect
@@ -145,19 +143,19 @@ double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,i
    return (double)numCorrect / (double)data.size();
 }
 
-void nearest_neighbour(vector<vector<double>> data, int numFeatures) {
+double nearest_neighbour(vector<vector<double>> data, int numFeatures) {
    vector<int> currentFeatures;
 
    for (int i = 1; i < numFeatures; i++)
       currentFeatures.push_back(i);
 	
-   double accuracy = leave_one_out(data,currentFeatures,0,false);
-				
    cout << "Running nearest neighbor with all " << numFeatures - 1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of ";
-   cout << leave_one_out(data,currentFeatures,0,false) << "%" << endl << endl;
+   double accuracy = leave_one_out(data,currentFeatures,0,false);
+
+   return leave_one_out(data,currentFeatures,0,false);
 }
 
-void forwardSelection(vector< vector<double> > data) {
+void forward_selection(vector<vector<double> > data) {
    vector<int> currentFeatures; // current set of features being tested
    vector<int> bestFeatures; // set of features with highest accuracy 
    double accuracy = 0; 
@@ -172,7 +170,7 @@ void forwardSelection(vector< vector<double> > data) {
          if (find(currentFeatures.begin(), currentFeatures.end(), j) == currentFeatures.end()) {
             accuracy = leave_one_out(data,currentFeatures, j, true);
 				
-            cout << "\tUsing feature(s) {";
+            cout << "Using feature(s) {";
             for (int k = 0; k < currentFeatures.size(); k++) 
                cout << currentFeatures[k] << ",";
             cout << j << "} accuracy is ";
@@ -202,7 +200,7 @@ void forwardSelection(vector< vector<double> > data) {
    }
 
    cout << GREEN;
-   cout << "Finished search!! The best feature subset is {";
+   cout << "Finished search! The best feature subset is {";
    displaySubset(bestFeatures);
    cout << globalMaxAccuracy * 100 << "%" << endl << RESET;
 }
@@ -218,12 +216,13 @@ vector<int> removeFeature(vector<int> currentFeatures, int removedFeature) {
    return currentFeatures;
 }
 
-void backwardElim(vector< vector<double>> data) {
+void backward_elimination(vector<vector<double>> data) {
    vector <int> currentFeatures;
    vector <int> bestFeatures;
    double accuracy = 0;
    double maxAccuracy = 0;
    double globalMaxAccuracy = 0;
+
    int removedFeature;
 		
    for (int i = 1; i < data[0].size(); i++) 
@@ -234,13 +233,13 @@ void backwardElim(vector< vector<double>> data) {
 	   
       for (int j = 1; j < data[0].size(); j++) { 
          if (find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
-            vector<int> tmp = removeFeature(currentFeatures, j);
-            cout << "\tUsing feature(s) {";
-            for (int k = 0; k < tmp.size() - 1; k++)
-               cout << tmp.at(k) << ",";
-            cout << tmp.at(tmp.size() - 1) << "} accuracy is ";
+            temp.erase(remove(temp.begin(), temp.end(), j), temp.end());
+            cout << "Using feature(s) {";
+            for (int k = 0; k < temp.size() - 1; k++)
+               cout << temp.at(k) << ",";
+            cout << temp.at(temp.size() - 1) << "} accuracy is ";
 		 
-	         accuracy = leave_one_out(data, tmp, j, false);
+	         accuracy = leave_one_out(data, temp, j, false);
             cout << accuracy * 100 << "%" << endl;
             if (accuracy > maxAccuracy) {
                maxAccuracy = accuracy;
