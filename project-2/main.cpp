@@ -8,8 +8,8 @@
 
 using namespace std;
 
-char NORMAL[] = { 0x1b, '[', '0', ';', '3', '9', 'm', 0 };
-char BLUE[] = { 0x1b, '[', '1', ';', '3', '9', 'm', 0 };
+char NORMAL[] = { 0x1b, '[', '0', ';', '3', '7', 'm', 0 };
+char BLUE[] = { 0x1b, '[', '0', ';', '3', '4', 'm', 0 };
 
 void normalizeData(vector<vector<double>> data);
 void displaySubset(vector<int> feature, int accu);
