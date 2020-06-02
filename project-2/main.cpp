@@ -48,8 +48,7 @@ int main() {
       }
       file.close();
    }
-
-   cout << endl;
+	
    cout << YELLOW << "Choose an algorithm" << endl;
 	cout << endl;
 	cout << "1) Forward Selection" << endl;
@@ -193,17 +192,19 @@ void forwardSelection(vector< vector<double> > data) {
          globalMaxAccuracy = maxAccuracy;
          bestFeatures = currentFeatures;
       } else {
-         cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
+         cout << RED << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl << RESET;
       }
 	   
+      cout << YELLOW;
       cout << "Feature set {";
       displaySubset(currentFeatures);
-      cout << maxAccuracy * 100 << "%" << endl << endl;
+      cout << maxAccuracy * 100 << "%" << endl << endl << RESET;
    }
-	
+
+   cout << GREEN;
    cout << "Finished search!! The best feature subset is {";
    displaySubset(bestFeatures);
-   cout << globalMaxAccuracy * 100 << "%" << endl;
+   cout << globalMaxAccuracy * 100 << "%" << endl << RESET;
 }
 
 // helper function for backward elimination (removes feature from vector)
@@ -255,15 +256,17 @@ void backwardElim(vector< vector<double>> data) {
          globalMaxAccuracy = maxAccuracy;
          bestFeatures = currentFeatures;
       } else {
-         cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
+         cout << RED << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl << RESET;
       }
 
+      cout << YELLOW;
       cout << "Feature set {";
       displaySubset(currentFeatures);
-      cout << maxAccuracy * 100 << "%" << endl;
+      cout << maxAccuracy * 100 << "%" << endl << endl << RESET;
    }
 
+   cout << GREEN;
    cout << "Finished search! The best feature subset is {";
    displaySubset(bestFeatures);
-   cout << globalMaxAccuracy * 100 << "%" << endl;
+   cout << globalMaxAccuracy * 100 << "%" << endl << RESET;
 }
