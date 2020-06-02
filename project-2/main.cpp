@@ -12,7 +12,7 @@ using namespace std;
    To normalize our data, we will use the min max normalization method as opposed to
    the z-score normalization
 */
-void normalizeData(vector<vector<double>> data, int numInstance, int numFeatures) {
+void normalizeData(vector<vector<double>> data) {
    vector<double> fMin;
    vector<double> fMax;
 
