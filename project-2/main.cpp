@@ -1,416 +1,227 @@
 #include <iostream>
-#include <string>
-#include <cstring>
+#include <cmath>
 #include <fstream>
-#include <vector>
 #include <sstream>
-#include <math.h>
-#include <cstdlib>
+#include <vector>
+#include <algorithm>
+#include <stdlib.h>
 using namespace std;
 
-// copy_data transfers data from text file to matrix of type float
-void copy_data(string data_file_name, vector<vector <float> >& data_matrix);
-double leave_one_out_accuracy(vector<vector <float> >& data_matrix, vector<int> passed_features);
-float nn_classifier(vector< vector<float> >& training_data_matrix, vector<float> &instance, vector<int>& features);
-void forward_selection(vector< vector <float> >& data_matrix);
-void backward_elimination(vector<vector<float> >& data_matrix);
+double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
+	int numCorrect = 0; // number of correct classifications
+	double tmp, min_dist, dist = 0;
+	vector <double> testingSet;
+	vector <double> nearest; // nearest neighbor (closest point in training set)
+	
+	for (int i = 0; i < data.size(); i++) {	
+		testingSet = data.at(i); 
+		min_dist = 1000000;
+		dist = 0;
 
-string to_string(int i);
+		for (int j = 0; j < data.size(); j++) { 
+			if (j != i) { 
+				tmp = 0;
+				for (int k = 0; k < currentFeatures.size(); k++)  
+					tmp += (pow(testingSet.at(currentFeatures.at(k)) - data[j].at(currentFeatures.at(k)), 2));
+				if (isForward)
+					tmp += (pow(testingSet.at(newFeature) - data.at(j).at(newFeature), 2));
+				dist = sqrt(tmp);
+				if (dist < min_dist) { 
+					min_dist = dist;
+					nearest = data.at(j);
+				}
+			}	
+		}	
+		
+		// if predicted/actual classifications are the same, increment numCorrect
+		if (nearest.at(0) == 1 && testingSet.at(0) == 1) 
+			++numCorrect;
+		else if (nearest.at(0) == 2 && testingSet.at(0) == 2)
+			++numCorrect;
+	}
+
+	return (double)numCorrect / (double)data.size();
+}
+
+void nearest_neighbour(vector<vector<double>> data, int numFeatures) {
+	vector<int> currentFeatures;
+
+	for (int i = 1; i < numFeatures; i++)
+		currentFeatures.push_back(i);
+	
+	double accuracy = leave_one_out(data,currentFeatures,0,false);
+				
+	cout << "Running nearest neighbor with all " << numFeatures - 1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of ";
+   cout << leave_one_out(data,currentFeatures,0,false) << "%" << endl << endl;
+}
+
+void forwardSelection(vector< vector<double> > data) {
+	vector<int> currentFeatures; // current set of features being tested
+	vector<int> bestFeatures; // set of features with highest accuracy 
+	double accuracy = 0; 
+	double bestAccuracy = 0; // highest accuracy to a certain point
+	double maxAccuracy = 0; // highest accuracy overall
+	int addedFeature;
+	
+	for (int i = 1; i < data.at(0).size(); i++) {
+		bestAccuracy = 0;
+		for (int j = 1; j < data.at(0).size(); j++) { 
+			if (std::find(currentFeatures.begin(), currentFeatures.end(), j) == currentFeatures.end()) {
+				accuracy = leave_one_out(data,currentFeatures, j, true);
+				
+				cout << "\tUsing feature(s) {";
+				for (int k = 0; k < currentFeatures.size(); k++) 
+					cout << currentFeatures.at(k) << ",";
+				cout << j << "} accuracy is ";
+
+				cout << accuracy * 100 << "%" << endl;
+				if (accuracy > bestAccuracy) {
+					addedFeature = j;
+					bestAccuracy = accuracy;
+				}
+			}
+		}
+		currentFeatures.push_back(addedFeature);
+		cout << endl;
+		if (bestAccuracy > maxAccuracy) {
+			maxAccuracy = bestAccuracy;
+			bestFeatures = currentFeatures;
+		}
+		else {
+			cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
+		}
+		cout << "Feature set {";
+		for (int k = 0; k < currentFeatures.size() - 1; k++)
+			cout << currentFeatures.at(k) << ",";
+		cout << currentFeatures.at(currentFeatures.size() - 1);
+		cout <<"} was best, accuracy is ";
+		cout << bestAccuracy * 100 << "%" << endl << endl;
+	}
+	
+	cout << "Finished search!! The best feature subset is {";
+	for (int k = 0; k < bestFeatures.size() - 1; k++)
+		cout << bestFeatures.at(k) << ",";
+	cout << bestFeatures.at(bestFeatures.size() - 1);
+	cout << "}, which has an accuracy of " << maxAccuracy * 100 << "%" << endl;
+	
+	return;
+}
+
+// helper function for backward elimination (removes feature from vector)
+vector <int> removeFeature(vector<int> currentFeatures, int removedFeature) {
+	for (int i = 0; i < currentFeatures.size(); i++) {
+		if (currentFeatures.at(i) == removedFeature) {
+			currentFeatures.erase(currentFeatures.begin() + i);
+			return currentFeatures;
+		}
+	}
+	return currentFeatures;
+}
+
+void backwardElim(vector< vector<double> > data) {
+	vector <int> currentFeatures;
+	vector <int> bestFeatures;
+	double accuracy = 0;
+	double bestAccuracy = 0;
+	double maxAccuracy = 0;
+	int removedFeature;
+		
+	for (int i = 1; i < data.at(0).size(); i++) 
+		currentFeatures.push_back(i);
+	
+	for (int i = 1; i < data.at(0).size() - 1; i++) {
+		bestAccuracy = 0;
+		for (int j = 1; j < data.at(0).size(); j++) { 
+			if (std::find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
+				vector <int> tmp = removeFeature(currentFeatures, j);
+				cout << "\tUsing feature(s) {";
+				for (int k = 0; k < tmp.size() - 1; k++)
+					cout << tmp.at(k) << ",";
+				cout << tmp.at(tmp.size() - 1) << "} accuracy is ";
+
+				accuracy = leave_one_out(data, tmp, j, false);
+				cout << accuracy * 100 << "%" << endl;
+				if (accuracy > bestAccuracy) {
+					bestAccuracy = accuracy;
+					removedFeature = j;
+				}
+			}
+		}
+		currentFeatures = removeFeature(currentFeatures, removedFeature);
+		cout << endl;
+		if (bestAccuracy > maxAccuracy) {
+			maxAccuracy = bestAccuracy;
+			bestFeatures = currentFeatures;
+		}
+		else
+			cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
+		cout << "Feature set {";
+		for (int k = 0; k < currentFeatures.size() - 1; k++)
+			cout << currentFeatures.at(k) << ",";
+		cout << currentFeatures.at(currentFeatures.size() - 1);
+		cout <<"} was best, accuracy is ";
+		cout << bestAccuracy * 100 << "%" << endl << endl;
+	}
+
+	cout << "Finished search!! The best feature subset is {";
+	for (int k = 0; k < bestFeatures.size() - 1; k++)
+		cout << bestFeatures.at(k) << ",";
+	cout << bestFeatures.at(bestFeatures.size() - 1);
+	cout << "}, which has an accuracy of " << maxAccuracy * 100 << "%" << endl;
+}
 
 int main() {
     
-    vector <vector <float> > data_matrix;
-
-    string  file_name = ""; // Stores name of file to test
-    int selection = 1;          
+    string filename, line;
+    vector< vector<double> > dataset;
+    double acc = 0.0;
+    double data = 0.0;
     
-    std::cout << "Welcome to Rick Boshae's Feature Selection Algorithm." << std::endl;
-    std::cout << "Type in the name of the file to test : ";
+    cout << "Welcome to Sabrina Chen's Feature Selection Algorithm." << endl << "Type in the name of the file to test: ";
+    cin >> filename;
+    cout << endl;
     
-    getline(cin, file_name);
-
-    // copy_data reads data from input file and stores it to the data_matrix
-    copy_data(file_name, data_matrix);    
-
-//    //Print data_matrix -- for testing
-//    for(int i = 0; i < data_matrix.size(); i++){
-//        for (int j = 0; j < data_matrix[i].size(); j++) {
-//            cout << data_matrix[i][j] << " ";
-//        }
-//        cout << "newline" << endl;
-//    }
-
-
-
-    cout << "Type the number of the algorithm you want me to run." << std::endl;
-    
-    cout << "\t1) Forward Selection\n";
-    cout << "\t2) Backward Elimination\n";
-    cout << "\t3) Rick's Special Algorithm\n";
-    
-    cin >> selection;
-  
-
-    vector<int> features;
-     for( int i = 1; i < data_matrix[0].size(); i++) {
-         features.push_back(i);
-        
-     }
-    double accuracy = leave_one_out_accuracy(data_matrix, features );
-
-    cout << "This dataset has " << data_matrix[0].size() - 1 << " features (not including the class attributes), with " << data_matrix.size() << " instances." << endl << endl;
-
-    cout << "Please wait while I normalize the data...(under construction)" << endl <<endl;
-        
-        
-    cout << "Running nearest neighbor with all " << data_matrix[0].size() - 1 << " features, using \"leave-one-out\" evaluation, I get an accuracy of " << accuracy*100 << "%" << endl <<endl;
-    
-   // vector<float> test_instance;
-   // test_instance.push_back(2);
-   // test_instance.push_back(4);
-   // test_instance.push_back(3);
-
-   // vector<int> features;
-    //features.push_back(0);
-   // features.push_back(1);
-   // features.push_back(2);
-
-    //cout << "Classifying 111...\n" << nn_classifier(data_matrix, test_instance, features) <<endl;
-
-    switch(selection) {
-    
-        case 1: std::cout << "Forward Selection selected." << std::endl; forward_selection(data_matrix);
-                break;
-        case 2: std::cout << "Backward Elimination selected." << std::endl; backward_elimination(data_matrix);
-                break;
-        case 3: std::cout << "Ricks Special Algorithm selected." << std::endl;
-                break;
-        default: std::cout << "No selection was made, default to Rick's Special Algorithm" << std::endl;
-                      break;
-    }
-
-    return 0; //end of main
-}
-
-
-
-
-
-
-
-
-
-void copy_data(string data_file_name, vector<vector <float> >& data_matrix) {
-
-    ifstream data_file;
-    string line;
-    char next;
-    float data_value;
-    vector<float> row;
-
-    const char* cstr = data_file_name.c_str(); // Convert file name to char* to be used in file stream
-    
-    data_file.open(cstr);
-
-    if (data_file.is_open()) {
-        
-        // Output to verify that the file is accessable
-        cout << "File opened successfully.\n";
-
-        while( !data_file.eof() ) {    
-
-            getline(data_file, line);
-            stringstream ss(line);            // make a stream for the line itself
-            
-            while( ss >> data_value){
-            
-                row.push_back(data_value);
-                
-            }
-        // Prevent emtpty row from being stored.
-            if (row.size() > 0) {
-            data_matrix.push_back(row);
-            }
-            row.clear();
-
-        }
-
-        data_file.close();
-         } else {
-        cout << "Error opening file\n";
-        cout << "The file may have been mispelled or not exist.\n";
-        exit(1);
-    }
-return;
-}
-
-
-
-double leave_one_out_accuracy(vector<vector <float> >& data_matrix, vector<int> passed_features) {
-    
-    double  accuracy = 0.0; // used to calculate
-    vector< vector <float> > training_set = data_matrix;
-    vector<float> selected_instance;
-    vector<int> features = passed_features;
-    float predicted_class;
-
-    //Loop for each row in matrix
-    for (int m = 0; m < data_matrix.size(); m++) {
-        //Select a row from the matrix (row i)
-        training_set = data_matrix;
-        selected_instance = training_set.at(m);
-        training_set.erase(training_set.begin() + m);
-        
-      //  for( int i = 1; i < selected_instance.size(); i++) {
-        //
-          //  features.push_back(i);
-        
-       // }
-      // features.push_back(1);
-      // features.push_back(27);
-      // features.push_back(3);
-
-        predicted_class = nn_classifier(training_set, selected_instance, features);
-
- 
-      //check accuracy
-    if (selected_instance[0] == predicted_class){
-            
-            accuracy++;
-
-        }
-
-
-
-    }
-
-    return accuracy/(data_matrix.size());
-}
-
-
-
-
-
-float nn_classifier(vector < vector <float> >& training_data_matrix, vector<float>& instance, vector<int>& selected_features) {
-
-    float classification = 0; 
-    float nn_distance = pow(10,38);
-    float e_distance = 0;
-    int nn_instance = 0;
-
-    //Loop through each instance in the training data matrix
-    for( int i = 0; i < training_data_matrix.size(); i++) {
-
-        //Compute Euclid distance for selected feautres
-        for(int j = 0; j < selected_features.size(); j++) {
-        
-            
-         //   cout << "selected feature: " << selected_features.at(j) << endl;
-             e_distance += pow((training_data_matrix[i][selected_features.at(j)] - instance[selected_features.at(j)]),2);
-                
-        }
-            e_distance = sqrt(e_distance);
-
-                if (e_distance < nn_distance){
-                    nn_distance = e_distance;
-                    nn_instance = i;
-                }
-            //clear e_distance
-            e_distance = 0;
-    }
-
-    classification = training_data_matrix[nn_instance][0];
-    
-
-    return classification;
-}
-
-void forward_selection(vector<vector<float> >& data_matrix){
-
-    vector<int> parent_feature_subset, child_feature_subset, best_feature_subset, local_best_feature_subset; 
-    double best_accuracy, accuracy, local_best_accuracy = 0;
-    string w = "";
-    bool already_has = false;
-   
-    for( int d = 1; d < data_matrix[d].size();d++) {
-    //fill feature index with number of 
-    for (int i = 1; i < data_matrix[i].size(); i++) {
-       
-        child_feature_subset = parent_feature_subset;
-        for(int c = 0; c < child_feature_subset.size(); c++){
-            if( i == child_feature_subset.at(c)){
-                already_has = true;
-            }
-        }
-        if (already_has){ 
-            already_has = false;
-            continue;
-        }
-        child_feature_subset.push_back(i);
-        accuracy = leave_one_out_accuracy(data_matrix, child_feature_subset);
-
-        for(int a = 0; a < child_feature_subset.size(); a++) {
-            if (a !=0) w.append(",");
-            w.append(to_string(child_feature_subset.at(a)));
-
-        }
-
-        //local best subset accuracy
-        if (accuracy > local_best_accuracy){
-            local_best_feature_subset = child_feature_subset;
-            local_best_accuracy = accuracy;
-        }
-
-        //record high feature subset percentage
-        if (accuracy > best_accuracy){
-            best_feature_subset = child_feature_subset;
-            best_accuracy = accuracy;
-        }
-        cout << "\tUsing feature(s) {" << w << "} accuracy is " << accuracy*100 << "%\n";
-        child_feature_subset = parent_feature_subset;
-        
-        //clear local records
-        w = "";
-    //    local_best_accuracy = 0;
-      //  local_best_feature_subset.clear();
-    }
-
-    for(int b = 0; b <local_best_feature_subset.size(); b++) {
-        if (b !=0) w.append(",");
-        w.append(to_string(local_best_feature_subset.at(b)));
-
-    }
-    if (local_best_accuracy < best_accuracy) {
-        
-        cout << "\n(Warning, Accuracy has decreased! Continuing search in case of local maxima)\n";
-    } else {
-        cout << endl;
-    }
-    cout << "Feature set {"<< w << "} was best, accuracy is " << local_best_accuracy*100 << "%\n\n";
-    w = "";
-
-
-    parent_feature_subset = local_best_feature_subset;
-    local_best_accuracy = 0;
-    local_best_feature_subset.clear();
-
-    }
-
-
-    for(int b = 0; b < best_feature_subset.size(); b++) {
-        if (b !=0) w.append(",");
-        w.append(to_string(best_feature_subset.at(b)));
-
-    }
-    cout << "Finished search!! The best feature subset is {" << w << "}, which has an accuracy of " << best_accuracy*100 << "%\n";
-
-
-    return;
-}
-
-
-void backward_elimination(vector<vector<float> >& data_matrix){
-
-    vector<int> parent_feature_subset, child_feature_subset, best_feature_subset, local_best_feature_subset; 
-    double best_accuracy, accuracy, local_best_accuracy = 0;
-    string w = "";
-    
-    //Populate parent_feature_subset will all features in a given instance.
-    for(int i = 1; i < data_matrix[0].size(); i++){
-        parent_feature_subset.push_back(i);
-    }
-
-    child_feature_subset = parent_feature_subset;
-    //special case for root/initial parent
-    accuracy = leave_one_out_accuracy(data_matrix, child_feature_subset);
-    //record high feature subset percentage
-    if (accuracy > best_accuracy){
-        best_feature_subset = child_feature_subset;
-        best_accuracy = accuracy;
-    }
-
-    for(int index = 0; index < best_feature_subset.size(); index++) {
-        if (index !=0) w.append(",");
-        w.append(to_string(best_feature_subset.at(index)));
-    }
-    
-    cout << "\tInitial feature(s) {" << w << "} accuracy is " << accuracy*100 << "%\n\n";
-    child_feature_subset = parent_feature_subset;
-        
-    //clear local records
-    w = "";
-    
-
-
-    //For each instance in the data matrix, remove one feature and get accuracy.
-    while(parent_feature_subset.size() != 1){
-        
-        
-        for( int d = 0; d < child_feature_subset.size();d++) {
-            
-            child_feature_subset = parent_feature_subset;
-            child_feature_subset.erase(child_feature_subset.begin() + d);
-            accuracy = leave_one_out_accuracy(data_matrix, child_feature_subset);
-
-        for(int a = 0; a < child_feature_subset.size(); a++) {
-            if (a !=0) w.append(",");
-            w.append(to_string(child_feature_subset.at(a)));
-
-        }
-
-        //local best subset accuracy
-        if (accuracy > local_best_accuracy){
-            local_best_feature_subset = child_feature_subset;
-            local_best_accuracy = accuracy;
-        }
-
-        //record high feature subset percentage
-        if (accuracy > best_accuracy){
-            best_feature_subset = child_feature_subset;
-            best_accuracy = accuracy;
-        }
-        cout << "\tUsing feature(s) {" << w << "} accuracy is " << accuracy*100 << "%\n";
-        child_feature_subset = parent_feature_subset;
-        
-        //clear local records
-        w = "";
-    }
-    
-
-    for(int b = 0; b <local_best_feature_subset.size(); b++) {
-        if (b !=0) w.append(",");
-        w.append(to_string(local_best_feature_subset.at(b)));
-    }
-    if (local_best_accuracy < best_accuracy) {
-        
-        cout << "\n(Warning, Accuracy has decreased! Continuing search in case of local maxima)\n";
-    } else {
-        cout << endl;
-    }
-    cout << "Feature set {"<< w << "} was best, accuracy is " << local_best_accuracy*100 << "%\n\n";
-    w = "";
-
-    parent_feature_subset = local_best_feature_subset;
-    local_best_accuracy = 0;
-    local_best_feature_subset.clear();
-    }
-
-
-    for(int index = 0; index < best_feature_subset.size(); index++) {
-        if (index !=0) w.append(",");
-        w.append(to_string(best_feature_subset.at(index)));
-    }
-
-    cout << "Finished search!! The best feature subset is {" << w << "}, which has an accuracy of " << best_accuracy*100 << "%\n";
-
-    return;
-}
-
-
-
-string to_string(int i)
-{
-        std::stringstream ss;
-            ss << i;
-                return ss.str();
+	ifstream file(filename.c_str());
+	if (!file.is_open()) {
+		cout << "Error: unable to open file." << endl;
+		return 0;
+	} else {
+		while (getline(file, line)) {
+			stringstream lineStream(line);
+			vector<double> instance;
+			
+			while (lineStream >> data) {
+				instance.push_back(data);
+			}
+			dataset.push_back(instance);
+		}
+		file.close();
+	}
+
+	cout << "Type the number of the algorithm you want to run. " << endl;
+	cout << "\t1) Forward Selection" << endl;
+	cout << "\t2) Backward Elimination" << endl;
+	cout << "\t3) Sabrina's Special Algorithm" << endl;
+	int choice = 0;
+	while (choice < 1 || choice > 3) {
+		cin >> choice;
+	}
+	
+	cout << endl;
+	cout << "This dataset has " << dataset.at(0).size() - 1 << " features (not including the class attribute), with " << dataset.size() << " instances." << endl << endl;
+
+	nearest_neighbour(dataset, dataset.at(0).size());
+	
+	cout << "Beginning search..." << endl << endl;
+	
+	if (choice == 1) {
+		forwardSelection(dataset);
+	}
+	else if (choice == 2) {
+		backwardElim(dataset);
+	}
+	else if (choice == 3) {
+	//	mySearch(dataset);
+	}
+	return 0;
 }
