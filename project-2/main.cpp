@@ -8,6 +8,64 @@
 
 using namespace std;
 
+void normalizeData(vector<vector<double>> data);
+void displaySubset(vector<int> feature, int accu);
+double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward);
+void nearest_neighbour(vector<vector<double>> data, int numFeatures);
+void forwardSelection(vector< vector<double> > data);
+vector<int> removeFeature(vector<int> currentFeatures, int removedFeature);
+void backwardElim(vector< vector<double>> data);
+
+int main() {
+   string filename, line;
+   vector<vector<double>> dataset;
+   double acc = 0.0;
+   double data = 0.0;
+   int algoChoice;
+    
+   cout << "Enter the name of the file you want to test: ";
+   cin >> filename;
+   cout << endl;
+    
+   ifstream file(filename.c_str());
+   if (!file.is_open()) {
+      cout << "Error: unable to open file." << endl;
+      return 0;
+   } else {
+      while (getline(file, line)) {
+         stringstream lineStream(line);
+         vector<double> instance;
+			
+         while (lineStream >> data) {
+            instance.push_back(data);
+         }
+         dataset.push_back(instance);
+      }
+      file.close();
+   }
+
+   cout << endl;
+   cout << "Choose an algorithm" << endl;
+	cout << endl;
+	cout << "1) Forward Selection" << endl;
+	cout << "2) Backward Selection" << endl;
+	cout << endl;
+
+   cout << "Enter your selection: ";
+   cin >> algoChoice;
+   cout << endl;
+
+   cout << "This dataset has " << dataset.at(0).size() - 1 << " features (not including the class attribute), with " << dataset.size() << " instances." << endl << endl;
+
+   nearest_neighbour(dataset, dataset.at(0).size());
+	
+   cout << "Beginning search..." << endl << endl;
+	
+   if (algoChoice == 1) { forwardSelection(dataset); } 
+   else if (algoChoice == 2) { backwardElim(dataset); }
+}
+
+
 /*
    To normalize our data, we will use the min max normalization method as opposed to
    the z-score normalization
@@ -149,7 +207,7 @@ void forwardSelection(vector< vector<double> > data) {
 }
 
 // helper function for backward elimination (removes feature from vector)
-vector <int> removeFeature(vector<int> currentFeatures, int removedFeature) {
+vector<int> removeFeature(vector<int> currentFeatures, int removedFeature) {
    for (int i = 0; i < currentFeatures.size(); i++) {
       if (currentFeatures.at(i) == removedFeature) {
          currentFeatures.erase(currentFeatures.begin() + i);
@@ -159,7 +217,7 @@ vector <int> removeFeature(vector<int> currentFeatures, int removedFeature) {
    return currentFeatures;
 }
 
-void backwardElim(vector< vector<double> > data) {
+void backwardElim(vector< vector<double>> data) {
    vector <int> currentFeatures;
    vector <int> bestFeatures;
    double accuracy = 0;
@@ -206,53 +264,4 @@ void backwardElim(vector< vector<double> > data) {
 
    cout << "Finished search! The best feature subset is {";
    displaySubset(bestFeatures, maxAccuracy);
-}
-
-int main() {
-   string filename, line;
-   vector<vector<double>> dataset;
-   double acc = 0.0;
-   double data = 0.0;
-   int algoChoice;
-    
-   cout << "Enter the name of the file you want to test: ";
-   cin >> filename;
-   cout << endl;
-    
-   ifstream file(filename.c_str());
-   if (!file.is_open()) {
-      cout << "Error: unable to open file." << endl;
-      return 0;
-   } else {
-      while (getline(file, line)) {
-         stringstream lineStream(line);
-         vector<double> instance;
-			
-         while (lineStream >> data) {
-            instance.push_back(data);
-         }
-         dataset.push_back(instance);
-      }
-      file.close();
-   }
-
-   cout << endl;
-   cout << "Choose an algorithm" << endl;
-	cout << endl;
-	cout << "1) Forward Selection" << endl;
-	cout << "2) Backward Selection" << endl;
-	cout << endl;
-
-   cout << "Enter your selection: ";
-   cin >> algoChoice;
-   cout << endl;
-
-   cout << "This dataset has " << dataset.at(0).size() - 1 << " features (not including the class attribute), with " << dataset.size() << " instances." << endl << endl;
-
-   nearest_neighbour(dataset, dataset.at(0).size());
-	
-   cout << "Beginning search..." << endl << endl;
-	
-   if (algoChoice == 1) { forwardSelection(dataset); } 
-   else if (algoChoice == 2) { backwardElim(dataset); }
 }
