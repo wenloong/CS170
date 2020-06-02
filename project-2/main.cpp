@@ -95,11 +95,11 @@ void normalizeData(vector<vector<double>> data) {
    }
 }
 
-void displaySubset(vector<int> feature, int accu) {
+void displaySubset(vector<int> feature) {
    for (int i = 0; i < feature.size() - 1; i++) {
       cout << feature[i] << ", ";
    }
-   cout << feature[feature.size() - 1] << "} was the best, with accuracy " << accu * 100 << "%" << endl;
+   cout << feature[feature.size() - 1] << "} was the best, with accuracy ";
 }
 
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
@@ -259,9 +259,11 @@ void backwardElim(vector< vector<double>> data) {
       }
 
       cout << "Feature set {";
-      displaySubset(currentFeatures, bestAccuracy);
+      displaySubset(currentFeatures);
+      cout << bestAccuracy * 100 << "%" << endl;
    }
 
    cout << "Finished search! The best feature subset is {";
-   displaySubset(bestFeatures, maxAccuracy);
+   displaySubset(bestFeatures);
+   cout << maxAccuracy * 100 << "%" << endl;
 }
