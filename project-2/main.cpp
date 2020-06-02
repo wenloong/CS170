@@ -233,9 +233,8 @@ void backward_elimination(vector<vector<double>> data) {
 	   
       for (int j = 1; j < data[0].size(); j++) { 
          if (find(currentFeatures.begin(), currentFeatures.end(), j) != currentFeatures.end()) {
-            vector<int> temp;
-            
-            temp.erase(remove(temp.begin(), temp.end(), j), temp.end());
+            vector<int> temp = removedFeature(currentFeatures, removedFeature);
+
             cout << "Using feature(s) {";
             for (int k = 0; k < temp.size() - 1; k++)
                cout << temp.at(k) << ",";
