@@ -12,30 +12,112 @@ using namespace std;
 const int MAX_INSTANCES = 2048;
 const int MAX_FEATURES = 64;
 
-void printSubset (vector<int> subset){
-// helper function to print our feature subsets
-// returns: void
+int main () {
+	double dataArr[MAX_INSTANCES][MAX_FEATURES];
 
-	cout << "{";
-	for (int i =0; i < subset.size(); i++){
-		cout << subset.at(i);
-		if (i != subset.size() - 1){
-			cout << ", ";
-		}
+   int algoChoice;
+	string fileName;
+	ifstream fin;
+
+	int numFeatures = 0;
+	int numInstances = 0;
+	double accuracy;
+	string line;
+	double word;
+	int input;
+   
+
+	cout << "Enter the file name you would like to test: ";
+	cin >> fileName;
+
+	fin.open(fileName.c_str());
+
+	if (!fin) {
+		cout << "ERROR: Invalid file" << endl;
+		exit(1); 
 	}
-	cout << "}";
+
+   cout << endl;
+   cout << "Choose an algorithm" << endl;
+	cout << endl;
+	cout << "1) Forward Selection" << endl;
+	cout << "2) Backward Selection" << endl;
+	cout << endl;
+
+   cin >> algoChoice;
+
+   // load data file into our program
+	// also, count the number of instances and features
+	while (getline(fin, line)){
+		numFeatures = 0;
+		stringstream s(line);
+
+		while(s >> word){
+			dataArray[numInstances][numFeatures] = word;
+			numFeatures++;
+		}
+
+		numInstances++;
+	}
+
+   // Normalize the data first.
+	normalizeData(dataArray, numInstances, numFeatures);
+
+   vector<int> allFeaturesSubset;
+   vector<int> solution;
+
+   for (int j =1; j < numFeatures; j++) {
+		allFeaturesSubset.push_back(j);
+	}
+
+	accuracy = leaveOneOut(dataArray, allFeaturesSubset, numInstances);
+	cout << endl;
+	cout << "Running nearest neighbor with all " << numFeatures - 1 
+			<< " features, using \"leave-one-out\" evaluation, I get an accuracy of " << accuracy << "%" << endl;   
+
+   if (algoChoice == 1) {
+      solution = forwards(dataArr, numInstances, numFeatures);
+   } else if (algoChoice == 2) {
+      solution = backwards(dataArr, numInstances, numFeatures);
+   } else {
+      cout << "Error: Invalid Choice" << endl;
+      exit(1);
+   }
+
+   cout << "Search complete. Here is the best feature subset: ";
+   displaySubset(solution);
+   cout << endl << "This has an accuracy of " << leaveOneOut(dataArr, solution, numInstances) << "%" << endl << endl;
+
+	return 0;
 }
 
-void normalize (double (&dataset)[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures) {
-// This function normalizes the data for us.
-// returns: nothing -- our dataset is passed by reference and changed
-// Normalized Data:  X = ( X-MEAN ) / STANDARD DEVIATION
 
-	cout << "This dataset has " << numFeatures - 1 << " features (not including the class attribute), with "
-			<< numInstances << " instances." << endl;
+/*
+   Accepts: vector<int>
+   Description: Displays feature subsets
+*/
+void displaySubset (vector<int> subset) {
+	cout << "{";
+   for (int i = 0; i < subset.size(); i++) {
+      cout << subset.at(i);
 
-	cout << endl;
-	cout << "Please wait while I normalize the data... ";
+      if (i != subset.size() - 1)
+         cout << ", ";
+   }
+   cout << "}";
+}
+
+/*
+   Accepts: double, int int
+   Description: Required function to normalize.
+   
+   Normalized Data:  X = ( X-MEAN ) / STANDARD DEVIATION
+*/
+void normalizeData (double (&dataset)[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures) {
+   cout << "-- Normalizing Data --" << endl;
+
+   vector<double> fMin;
+   vector<double> fMax;
 
 	double sum;
 	double varianceNum;
@@ -163,7 +245,7 @@ vector<int> forwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInstan
 
 				// print statement
 				cout << "		Using feature(s) ";
-				printSubset(temp);
+				displaySubset(temp);
 				cout << " accuracy is " << tempAccuracy << "%" << endl;
 
 				// max accuracy amongst particular set of subsets
@@ -196,14 +278,14 @@ vector<int> forwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInstan
 
 		if (selectedSubset.size() != numFeatures - 1){
 			cout << "Feature set ";
-			printSubset(selectedSubset);
+			displaySubset(selectedSubset);
 			cout << " was best, accuracy is, " << maxAccuracy << "%" << endl;
 		}
 	}
 
 	// cout << endl;
 	// cout << "Finished search!! The best feature subset is ";
-	// printSubset(solution);
+	// displaySubset(solution);
 	// cout << ", which has an accuracy of " << maxMaxAccuracy << "%" << endl;
 	// cout << endl;
 	return solution;
@@ -228,7 +310,7 @@ vector<int> backwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInsta
 	int maxIndex;
 
 	cout << "		Using feature(s) ";
-	printSubset(selectedSubset);
+	displaySubset(selectedSubset);
 	cout << " accuracy is " << maxMaxAccuracy << "%" << endl;
 
 	cout << endl;
@@ -248,7 +330,7 @@ vector<int> backwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInsta
 
 				// print statement
 				cout << "		Using feature(s) ";
-				printSubset(temp);
+				displaySubset(temp);
 				cout << " accuracy is " << tempAccuracy << "%" << endl;
 
 				// max accuracy amongst particular set of subsets
@@ -279,7 +361,7 @@ vector<int> backwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInsta
 		}
 
 		cout << "Feature set ";
-		printSubset(selectedSubset);
+		displaySubset(selectedSubset);
 		cout << " was best, accuracy is, " << maxAccuracy << "%" << endl;
 		
 	}
@@ -288,98 +370,3 @@ vector<int> backwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInsta
 	return solution;
 }
 
-int main () {
-
-	double dataArray[MAX_INSTANCES][MAX_FEATURES];
-	string fileName;
-	ifstream fin;
-	int numFeatures = 0;
-	int numInstances = 0;
-	double accuracy;
-	string line;
-	double word;
-	int input;
-
-	cout << endl;
-	cout << endl;
-	cout << "Welcome to Johanna Villacorta's Feature Selection Algorithm" << endl;
-
-	cout << endl;
-	cout << "Type in the name of the file to test: ";
-	cin >> fileName;
-
-	fin.open(fileName.c_str());
-
-	if (!fin){
-		cerr << "File could not be opened." << endl;
-		exit(1); 
-	}
-
-
-	// load data file into our program
-	// also, count the number of instances and features
-	while (getline(fin, line)){
-		numFeatures = 0;
-		stringstream s(line);
-
-		while(s >> word){
-			dataArray[numInstances][numFeatures] = word;
-			numFeatures++;
-		}
-
-		numInstances++;
-	}
-
-	// normalize the data we just ready in
-	normalize(dataArray, numInstances, numFeatures);
-
-	vector<int> allFeaturesSubset;
-	for (int j =1; j < numFeatures; j++) {
-		allFeaturesSubset.push_back(j);
-	}
-
-	accuracy = leaveOneOut(dataArray, allFeaturesSubset, numInstances);
-	cout << endl;
-	cout << "Running nearest neighbor with all " << numFeatures - 1 
-			<< " features, using \"leave-one-out\" evaluation, I get an accuracy of " << accuracy << "%" << endl;   
-
-// Prompt user to input algorithm choice
-// if invalid choice, print an error and re-prompt
-error1:
-		cout << endl;
-		cout << "Type the number of the algorithm you want to run" << endl;
-		cout << endl;
-		cout << "1) Forward Selection" << endl;
-		cout << "2) Backward Selection" << endl;
-		cout << endl;
-
-		cin >> input;
-
-		vector<int> solution;
-
-		switch(input)
-		{
-			case 1:	
-				solution = forwards(dataArray, numInstances, numFeatures);
-					cout << endl;
-					cout << "Finished search!! The best feature subset is ";
-					printSubset(solution);
-					cout << ", which has an accuracy of " << leaveOneOut(dataArray, solution, numInstances) << "%" << endl;
-					cout << endl;
-				break;
-			case 2:
-				solution = backwards(dataArray, numInstances, numFeatures);
-					cout << endl;
-					cout << "Finished search!! The best feature subset is ";
-					printSubset(solution);
-					cout << ", which has an accuracy of " << leaveOneOut(dataArray, solution, numInstances) << "%" << endl;
-					cout << endl;
-				break;
-			default:
-				cout << "Invalid Entry." << endl;
-				goto error1;
-		}
-
-
-	return 0;
-}
