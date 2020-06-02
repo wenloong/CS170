@@ -8,6 +8,9 @@
 
 using namespace std;
 
+char NORMAL[] = { 0x1b, '[', '0', ';', '3', '9', 'm', 0 };
+char BLUE[] = { 0x1b, '[', '1', ';', '3', '9', 'm', 0 };
+
 void normalizeData(vector<vector<double>> data);
 void displaySubset(vector<int> feature, int accu);
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward);
@@ -22,7 +25,7 @@ int main() {
    double dataInput = 0.0;
    int algoChoice;
     
-   cout << "Enter the name of the file you want to test: ";
+   cout << BLUE << "Enter the name of the file you want to test: ";
    cin >> filename;
    cout << endl;
     
