@@ -12,6 +12,15 @@ using namespace std;
 const int MAX_INSTANCES = 2048;
 const int MAX_FEATURES = 64;
 
+void displaySubset (vector<int> subset);
+void normalizeData (double (&dataset)[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures);
+double nearestNeighbor (double dataset[MAX_INSTANCES][MAX_FEATURES], int instIndex, vector<int> featureSubset, int numInstances);
+double leaveOneOut (double dataset[MAX_INSTANCES][MAX_FEATURES], vector<int> featureSubset, int numInstances);
+vector<int> forwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures);
+vector<int> backwards (double dataset[MAX_INSTANCES][MAX_FEATURES], int numInstances, int numFeatures);
+
+
+
 int main () {
 	double dataArr[MAX_INSTANCES][MAX_FEATURES];
 
@@ -53,7 +62,7 @@ int main () {
 		stringstream s(line);
 
 		while(s >> word){
-			dataArray[numInstances][numFeatures] = word;
+			dataArr[numInstances][numFeatures] = word;
 			numFeatures++;
 		}
 
@@ -61,7 +70,7 @@ int main () {
 	}
 
    // Normalize the data first.
-	normalizeData(dataArray, numInstances, numFeatures);
+	normalizeData(dataArr, numInstances, numFeatures);
 
    vector<int> allFeaturesSubset;
    vector<int> solution;
@@ -70,7 +79,7 @@ int main () {
 		allFeaturesSubset.push_back(j);
 	}
 
-	accuracy = leaveOneOut(dataArray, allFeaturesSubset, numInstances);
+	accuracy = leaveOneOut(dataArr, allFeaturesSubset, numInstances);
 	cout << endl;
 	cout << "Running nearest neighbor with all " << numFeatures - 1 
 			<< " features, using \"leave-one-out\" evaluation, I get an accuracy of " << accuracy << "%" << endl;   
