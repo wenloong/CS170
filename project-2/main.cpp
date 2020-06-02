@@ -37,6 +37,13 @@ void normalizeData(vector<vector<double>> data) {
    }
 }
 
+void displaySubset(vector<int> feature, int accu) {
+   for (int i = 0; i < feature.size() - 1; i++) {
+      cout << feature[i] << ", ";
+   }
+   cout << feature[feature.size() - 1] << "} was the best, with accuracy " << accu * 100 << "%" << endl;
+}
+
 double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
    int numCorrect = 0; // number of correct classifications
    double tmp, min_dist, dist = 0;
@@ -201,18 +208,12 @@ void backwardElim(vector< vector<double> > data) {
    displaySubset(bestFeatures, maxAccuracy);
 }
 
-void displaySubset(vector<int> feature, int accu) {
-   for (int i = 0; i < feature.size() - 1; i++) {
-      cout << feature[i] << ", ";
-   }
-   cout << feature[feature.size() - 1] << "} was the best, with accuracy " << accu * 100 << "%" << endl;
-}
-
 int main() {
    string filename, line;
    vector<vector<double>> dataset;
    double acc = 0.0;
    double data = 0.0;
+   int algoChoice;
     
    cout << "Enter the name of the file you want to test: ";
    cin >> filename;
@@ -252,6 +253,6 @@ int main() {
 	
    cout << "Beginning search..." << endl << endl;
 	
-   if (choice == 1) { forwardSelection(dataset); } 
-   else if (choice == 2) { backwardElim(dataset); }
+   if (algoChoice == 1) { forwardSelection(dataset); } 
+   else if (algoChoice == 2) { backwardElim(dataset); }
 }
