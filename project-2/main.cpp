@@ -174,7 +174,7 @@ void backwardElim(vector< vector<double> > data) {
                cout << tmp.at(k) << ",";
             cout << tmp.at(tmp.size() - 1) << "} accuracy is ";
 		 
-	    accuracy = leave_one_out(data, tmp, j, false);
+	         accuracy = leave_one_out(data, tmp, j, false);
             cout << accuracy * 100 << "%" << endl;
             if (accuracy > bestAccuracy) {
                bestAccuracy = accuracy;
@@ -193,22 +193,19 @@ void backwardElim(vector< vector<double> > data) {
          cout << "(Warning, accuracy has decreased! Continuing search in case of local maxima)" << endl;
       }
 
+      cout << "Feature set {";
       displaySubset(currentFeatures, bestAccuracy);
    }
 
-   cout << "Finished search!! The best feature subset is {";
-   for (int k = 0; k < bestFeatures.size() - 1; k++)
-      cout << bestFeatures.at(k) << ",";
-   cout << bestFeatures.at(bestFeatures.size() - 1);
-   cout << "}, which has an accuracy of " << maxAccuracy * 100 << "%" << endl;
+   cout << "Finished search! The best feature subset is {";
+   displaySubset(bestFeatures, maxAccuracy);
 }
 
-void displaySubset(vector<int> currentFeatures, int accu) {
-   cout << "Feature set {";
-   for (int i = 0; i < currentFeatures.size() - 1; i++) {
-      cout << currentFeatures[i] << ", ";
+void displaySubset(vector<int> feature, int accu) {
+   for (int i = 0; i < feature.size() - 1; i++) {
+      cout << feature[i] << ", ";
    }
-   cout << currentFeatures[currentFeatures.size() - 1] << "} was the best, with accuracy " << acc * 100 << "%" << endl;
+   cout << feature[feature.size() - 1] << "} was the best, with accuracy " << acc * 100 << "%" << endl;
 }
 
 int main() {
