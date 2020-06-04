@@ -101,9 +101,7 @@ class mlSearch {
                }	
             }	
 
-            if (nearest[0] == 1 && testingSet[0] == 1) 
-               numCorrect++;
-            else if (nearest[0] == 2 && testingSet[0] == 2)
+            if ((nearest[0] == 1 && testingSet[0] == 1) || (nearest[0] == 2 && testingSet[0] == 2)) 
                numCorrect++;
          }
          return (double)numCorrect / (double)data.size();
