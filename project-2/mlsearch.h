@@ -19,13 +19,14 @@ char YELLOW[] = { 0x1b, '[', '0', ';', '3', '3', 'm', 0 };
 
 class mlSearch {
    public:
+      // Initialize the class with a file given by the user
       mlSearch(string filename) {
          ifstream file(filename.c_str());
 
          if (!file.is_open()) {
             cout << RED << "ERROR: unable to open file." << RESET << endl;
             exit(1);
-         }
+         } // Exit if file is not readable
 
          while (getline(file, line)) {
             stringstream lineStream(line);
@@ -41,6 +42,8 @@ class mlSearch {
          file.close();
       }
 
+      // Normalize the data before moving on with nearest neighbour algorithm.
+      // We will use min and max normalization for this instead of z-normalization
       void normalizeData(vector<vector<double>> data) {
          vector<double> fMin;
          vector<double> fMax;
@@ -64,6 +67,7 @@ class mlSearch {
          }
       }
 
+      // Helper function to display the subsets
       void displaySubset(vector<int> feature) {
          for (int i = 0; i < feature.size() - 1; i++) {
             cout << feature[i] << ", ";
@@ -71,13 +75,16 @@ class mlSearch {
          cout << feature[feature.size() - 1] << "} was the best, with accuracy ";
       }
 
-      double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool forwardSelection) {
+      // leave one out algorithm which also takes another input to detect if the algorithm
+      // is forward or backwards to avoid making another function solely for forward.
+      double leave_one_out(vector<vector<double>> data, bool forwardSelection, vector<int> currentFeatures ,int newFeature) {
          int numCorrect = 0;
          double temp, mDist, distance = 0;
          vector <double> testingSet;
          vector <double> nearest;
          
          for (int i = 0; i < data.size(); i++) {	
+            // Let's define the min, and distance.
             testingSet = data[i]; 
             distance = 0;
             mDist = 1000000;
@@ -87,10 +94,10 @@ class mlSearch {
                   temp = 0;
             
                   for (int k = 0; k < currentFeatures.size(); k++) {
-                     temp += (pow(testingSet[currentFeatures[k]] - data[j][currentFeatures[k]], 2));
+                     temp += (pow(testingSet[currentFeatures[k]] - data[j][currentFeatures[k]], 2)); // get the power
                   }
                   if (forwardSelection) {
-                     temp += (pow(testingSet[newFeature] - data[j][newFeature], 2));
+                     temp += (pow(testingSet[newFeature] - data[j][newFeature], 2)); // Only get power if it's a forward search
                   }
                   distance = sqrt(temp);
             
@@ -101,12 +108,14 @@ class mlSearch {
                }	
             }	
 
+            // Make sure to calculate the num of correct predictions.
             if ((nearest[0] == 1 && testingSet[0] == 1) || (nearest[0] == 2 && testingSet[0] == 2)) 
                numCorrect++;
          }
          return (double)numCorrect / (double)data.size();
       }
 
+      // nearest neighbour function to also help with our algorithm. 
       double nearest_neighbour() {
          int numFeatures = data[0].size();
          vector<int> currentFeatures;
@@ -122,6 +131,7 @@ class mlSearch {
          return leave_one_out(data,currentFeatures,0,false);
       }
 
+      // cari subset dengan forward selection.
       void forward_selection() {
          vector<int> currentFeatures, bestFeatures;
          double accuracy = 0, maxAccuracy = 0, globalMaxAccuracy = 0;
@@ -169,12 +179,11 @@ class mlSearch {
          cout << globalMaxAccuracy * 100 << "%" << endl << RESET;
       }
 
+      // algorithm ini seperti forward selection. Algorithm sama tapi kita nak patuskan.
       void backward_elimination() {
          vector <int> currentFeatures;
          vector <int> bestFeatures;
-         double accuracy = 0;
-         double maxAccuracy = 0;
-         double globalMaxAccuracy = 0;
+         double accuracy = 0, maxAccuracy = 0, globalMaxAccuracy = 0;
          int maxIn;
             
          for (int i = 1; i < data[0].size(); i++) 
@@ -197,7 +206,7 @@ class mlSearch {
                   cout << accuracy * 100 << "%" << endl;
                   if (accuracy > maxAccuracy) {
                      maxAccuracy = accuracy;
-                     maxIn = j;
+                     maxIn = j; // penting untuk mencari accuracy sebernah. 83% - 73%. 10% jatuh.
                   }
                }
             }
@@ -205,6 +214,7 @@ class mlSearch {
             currentFeatures.erase(remove(currentFeatures.begin(), currentFeatures.end(), maxIn), currentFeatures.end());
             cout << endl;
             
+            // Jika ini tak lapus, check ini akan jatuh
             if (maxAccuracy > globalMaxAccuracy) {
                globalMaxAccuracy = maxAccuracy;
                bestFeatures = currentFeatures;
