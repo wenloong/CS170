@@ -126,9 +126,9 @@ class mlSearch {
             currentFeatures.push_back(i);
          
          cout << "Running nearest neighbor with all " << numFeatures - 1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of ";
-         double accuracy = leave_one_out(data,currentFeatures,0,false);
+         double accuracy = leave_one_out(data,false, currentFeatures, 0);
 
-         return leave_one_out(data,currentFeatures,0,false);
+         return leave_one_out(data, false, currentFeatures,0);
       }
 
       // cari subset dengan forward selection.
@@ -142,7 +142,7 @@ class mlSearch {
             
             for (int j = 1; j < data[0].size(); j++) { 
                if (find(currentFeatures.begin(), currentFeatures.end(), j) == currentFeatures.end()) {
-                  accuracy = leave_one_out(data,currentFeatures, j, true);
+                  accuracy = leave_one_out(data, true, currentFeatures, j);
                   
                   cout << "Using feature(s) {";
                   for (int k = 0; k < currentFeatures.size(); k++) 
@@ -202,7 +202,7 @@ class mlSearch {
                      cout << temp.at(k) << ",";
                   cout << temp.at(temp.size() - 1) << "} accuracy is ";
             
-                  accuracy = leave_one_out(data, temp, j, false);
+                  accuracy = leave_one_out(data, false, temp, j);
                   cout << accuracy * 100 << "%" << endl;
                   if (accuracy > maxAccuracy) {
                      maxAccuracy = accuracy;
