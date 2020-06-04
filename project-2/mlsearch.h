@@ -71,16 +71,16 @@ class mlSearch {
          cout << feature[feature.size() - 1] << "} was the best, with accuracy ";
       }
 
-      double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool isForward) {
+      double leave_one_out(vector<vector<double>> data, vector<int> currentFeatures ,int newFeature, bool forwardSelection) {
          int numCorrect = 0;
-         double temp, min_dist, dist = 0;
+         double temp, mDist, distance = 0;
          vector <double> testingSet;
          vector <double> nearest;
          
          for (int i = 0; i < data.size(); i++) {	
             testingSet = data[i]; 
-            min_dist = 1000000;
-            dist = 0;
+            distance = 0;
+            mDist = 1000000;
 
             for (int j = 0; j < data.size(); j++) { 
                if (j != i) { 
@@ -89,22 +89,22 @@ class mlSearch {
                   for (int k = 0; k < currentFeatures.size(); k++) {
                      temp += (pow(testingSet[currentFeatures[k]] - data[j][currentFeatures[k]], 2));
                   }
-                  if (isForward) {
-                        temp += (pow(testingSet[newFeature] - data[j][newFeature], 2));
+                  if (forwardSelection) {
+                     temp += (pow(testingSet[newFeature] - data[j][newFeature], 2));
                   }
-                  dist = sqrt(temp);
+                  distance = sqrt(temp);
             
-                  if (dist < min_dist) { 
-                     min_dist = dist;
+                  if (distance < mDist) { 
+                     mDist = distance;
                      nearest = data[j];
                   }
                }	
             }	
 
             if (nearest[0] == 1 && testingSet[0] == 1) 
-               ++numCorrect;
+               numCorrect++;
             else if (nearest[0] == 2 && testingSet[0] == 2)
-               ++numCorrect;
+               numCorrect++;
          }
          return (double)numCorrect / (double)data.size();
       }
